@@ -18,9 +18,51 @@
     <ClCompile Include="labor_main.cc">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="labor_event.cc">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="labor_connect.cc">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="labor_request.cc">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="labor_response.cc">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="labor_pvm.cc">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="labor_utils.cc">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="labor_service.cc">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="labor.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="labor_connect.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="labor_event.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="labor_request.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="labor_response.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="labor_pvm.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="labor_utils.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="labor_service.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
