@@ -70,11 +70,16 @@ connector_(new _connector_impl(types)),
 types_(types){ }
 
 
+labor::Connector::~Connector()
+{}
+
+
 void
 labor::Connector::setFilter(const string & name)
 {
     connector_->setFilter(name);
 }
+
 
 bool
 labor::Connector::send(const string & s) const 
