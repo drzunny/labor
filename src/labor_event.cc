@@ -2,11 +2,19 @@
 #include "labor_connect.h"
 #include "labor_utils.h"
 
+#include <vector>
+#include <string>
+using namespace std;
+
 /* ------------------------------------
 * The Helper Functions
 * ------------------------------------
 */
-
+static vector<string>
+_msg_seperate(const string & msg, bool *ok)
+{
+    *ok = false;
+}
 
 /* ------------------------------------
 * The PIMPL
@@ -25,6 +33,12 @@ public:
 
         while (true) 
         {
+            auto p_msg = pubsub_.recv();
+            auto r_msg = reqrep_.recv();
+
+            bool p_ok = false, r_ok = false;
+            _msg_seperate(p_msg, &p_ok);
+            _msg_seperate(r_msg, &r_ok);
         }
     }
 private:
@@ -33,8 +47,8 @@ private:
     void _init()
     {
         auto packages = labor::readInstalledHandler();
-        auto pubsub_addr = labor::readConfig("pubsub", "address");
-        auto reqrep_addr = labor::readConfig("reqrep", "address");
+        auto pubsub_addr = labor::readConfig("labor", "pubsub_addr");
+        auto reqrep_addr = labor::readConfig("labor", "reqrep_addr");
 
         for (auto p : packages)
         {
