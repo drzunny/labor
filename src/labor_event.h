@@ -20,7 +20,7 @@ namespace labor
         void run();
 
     private:
-        std::unique_ptr<_event_impl> event_;
+        std::shared_ptr<_event_impl> event_;
     };
 
 }

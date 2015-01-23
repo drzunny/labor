@@ -8,7 +8,6 @@
 namespace labor
 {
     class _connector_impl;
-
     class Connector
     {
     public:
@@ -27,7 +26,7 @@ namespace labor
         void setFilter(const std::string & name);
 
     private:
-        std::unique_ptr<_connector_impl> connector_;
+        std::shared_ptr<_connector_impl> connector_;
         ConnectorTypes types_;
     };
 }

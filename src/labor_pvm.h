@@ -17,15 +17,15 @@ namespace labor
     public:
         static void setupEnvironment(const std::vector<std::string> & paths);
         static PvmPtr init();
+        static void dispose();
 
         void execute() const;
 
     private:
         static std::shared_ptr<PVM> s_pvm_;
 
-        PVM();
-        ~PVM();
-
+        PVM() {}
+        ~PVM() {}
     };
 }
 
