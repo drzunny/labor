@@ -3,6 +3,8 @@
 
 #include <vector>
 #include <string>
+#include <memory>
+#include <stdint.h>
 
 #define FREE_IF_NOT_NULL(p) \
     if (p != NULL) {free(p);} \
@@ -18,6 +20,35 @@ namespace labor
 
     // for string
     std::vector<std::string> string_split(const std::string & s, char delm);
+
+    // for Json
+
+    class _jsondoc_impl;
+    class JsonDoc
+    {
+    public:
+        JsonDoc();
+        ~JsonDoc();
+
+        static std::string encode(const JsonDoc & doc);
+        static JsonDoc decode(const std::string & json);
+        
+        bool has(const std::string & name) const;
+        bool isNull() const;
+
+        JsonDoc get(const std::string & name);
+        JsonDoc getIndex(int i);
+
+        int toInt() const;
+        int64_t toInt64() const;
+        std::string toString() const;
+        double toDouble() const;
+        bool toBool() const;
+
+    private:
+        std::shared_ptr<_jsondoc_impl> doc_;
+        labor::JsonDoc::JsonDoc(const labor::JsonDoc & o) {};
+    };
 }
 
 #endif
