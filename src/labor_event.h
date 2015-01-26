@@ -14,9 +14,6 @@ namespace labor
         Event();
         ~Event();
 
-        void setEventHandler(const std::string & name, const std::string & resolve);
-        void emit(const std::string & name);
-
         void run();
 
     private:
