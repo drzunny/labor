@@ -39,6 +39,12 @@
     <ClCompile Include="labor_service.cc">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="labor_opt.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="labor_log.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="labor.h">
@@ -63,6 +69,12 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="labor_service.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="labor_opt.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="labor_log.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

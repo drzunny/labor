@@ -2,6 +2,7 @@
 #define __LABOR_MAIN_H__
 
 #include "labor_utils.h"
+#include "labor_opt.h"
 
 // labor's request and response
 #include "labor_request.h"

@@ -2,6 +2,7 @@
 
 #include <io.h>
 #include <algorithm>
+#include <boost/algorithm/string.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/ini_parser.hpp>
 
@@ -102,15 +103,10 @@ labor::readConfig(const string & name, const string & dval) {
 // For String
 // -----------------------------------------
 vector<string>
-labor::string_split(const string & s, char delm)    {
-    // FIXIT: this is not a efficient way to split
-    istringstream iss(s);
-    istringstream dm(delm);
-    vector<string> out;
-
-    std::copy(istream_iterator<string>(iss), istream_iterator<string>(dm), std::back_inserter(out));
-
-    return out;
+labor::string_split(const string & s, const string & delm)    {
+    vector<string> result;
+    boost::split(result, s, boost::is_any_of(delm));
+    return result;
 }
 
 // For Json

@@ -19,7 +19,7 @@ namespace labor
     std::string readConfig(const std::string & name, const std::string& dval="");
 
     // for string
-    std::vector<std::string> string_split(const std::string & s, char delm);
+    std::vector<std::string> string_split(const std::string & s, const std::string & delm);
 
     // for Json
 

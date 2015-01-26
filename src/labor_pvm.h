@@ -15,8 +15,8 @@ namespace labor
     class PVM
     {
     public:
-        static void setupEnvironment(const std::vector<std::string> & paths);
-        static PvmPtr init();
+        static void setupEnv(const std::vector<std::string> & paths);
+        static void init();
         static void dispose();
 
         void execute() const;
