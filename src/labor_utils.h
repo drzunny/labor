@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include <memory>
+#include <time.h>
 #include <stdint.h>
 
 #define FREE_IF_NOT_NULL(p) \
@@ -13,16 +14,28 @@
 namespace labor
 {
     // About labor's common function
+    // --------------------------------------------
     void ready(int argc, char * argv[]);
     bool fileExists(const std::string & file);
     std::vector<std::string> readInstallModules();
     std::string readConfig(const std::string & name, const std::string& dval="");
 
+
+
     // for string
+    // --------------------------------------------
     std::vector<std::string> string_split(const std::string & s, const std::string & delm);
 
-    // for Json
 
+
+    // for time
+    // --------------------------------------------
+    uint64_t timestamp_now();
+    uint64_t timestamp_now_m();
+
+
+    // for Json
+    // --------------------------------------------
     class _jsondoc_impl;
     class JsonDoc
     {

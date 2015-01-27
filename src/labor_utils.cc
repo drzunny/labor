@@ -109,6 +109,22 @@ labor::string_split(const string & s, const string & delm)    {
     return result;
 }
 
+
+// For time
+// ----------------------------------------
+uint64_t
+labor::timestamp_now()  {
+    return time(0);
+}
+
+
+uint64_t
+labor::timestamp_now_m()  {
+    BOOST_ASSERT_MSG(false, "the milliseconds version is not implemented now...");
+    return 0;
+}
+
+
 // For Json
 // ---------------------------------------
 class labor::_jsondoc_impl

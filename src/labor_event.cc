@@ -3,6 +3,7 @@
 #include "labor_request.h"
 #include "labor_response.h"
 #include "labor_utils.h"
+#include "labor_log.h"
 
 #include <stdlib.h>
 #include <memory.h>
@@ -41,7 +42,8 @@ public:
             }
             else
             {
-                // TODO. log for error msg
+                LOG_INIT();
+                LOG_ERROR("invalid msg: %s", p_msg.c_str());
             }
         }
     }
