@@ -14,7 +14,6 @@ using namespace std;
 * The Helper Functions
 * ------------------------------------
 */
-#define _MSG_SP_DELM "\27"
 #define Hashtable unordered_map<string, string>
 
 
@@ -48,21 +47,6 @@ public:
         }
     }
 
-    void setEventHandler(const string & name, const string & resolve)
-    {
-        if (eventHandlers_.find(name) == eventHandlers_.end())
-            eventHandlers_[name] = resolve;
-    }
-
-    void emit(const string & name)
-    {
-        if (eventHandlers_.find(name) == eventHandlers_.end())  {
-            // TODO: Try to find, if not found, log it
-            return;
-        }
-        // TODO: send a request to handlers
-    }
-
 private:
     labor::Connector pubsub_;
     // labor::Connector reqrep_;
@@ -94,19 +78,6 @@ labor::Event::~Event()
 {
 }
 
-
-void
-labor::Event::setEventHandler(const string & name, const string & resolve)
-{
-    event_->setEventHandler(name, resolve);
-}
-
-
-void
-labor::Event::emit(const string & name)
-{
-    event_->emit(name);
-}
 
 void
 labor::Event::run()
