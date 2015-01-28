@@ -55,27 +55,21 @@ _load_config(const string & name, const string & dval = "")   {
 }
 
 static string
-_today_string() {
+_now_string() {
     uint64_t now = labor::timestamp_now();
     return "";
 }
 
 
 static string
-_datetime_utc_now() {
-    uint64_t utc_now = labor::timestamp_now();
-    return "";
-}
-
-static string
 _logger_level_string(labor::Logger::LoggerLevel level)  {
     switch (level)
     {
-    case labor::Logger::DEBUG:
+    case labor::Logger::LV_DEBUG:
         return "[ DEBUG ]";
-    case labor::Logger::WARNING:
+    case labor::Logger::LV_WARNING:
         return "[WARNING]";
-    case labor::Logger::ERR:
+    case labor::Logger::LV_ERROR:
         return "[ ERROR ]";
     default:
         return "[ INFO ] ";
@@ -170,32 +164,18 @@ _logger_queue_push(const string & filepath, int level,
 * The class implement
 * ------------------------------------
 */
-shared_ptr<labor::Logger>
-labor::Logger::defaultLogger_ = shared_ptr<labor::Logger>(NULL);
+string labor::Logger::filepath_ = _load_config("file_path", "./");
+string labor::Logger::format_ = _load_config("format", "@content");
+int labor::Logger::maxsize_ = _string2int(_load_config("file_size", "10"));
+bool labor::Logger::merge_ = _string2bool(_load_config("merge", "1"));
 
 
-weak_ptr<labor::Logger>
-labor::Logger::defaultLogger()  {
-    if (labor::Logger::defaultLogger_.get() == NULL)
-    {
-        string && filepath = _load_config("file_path", "./");
-        int maxFileSize = _string2int(_load_config("file_size", "10"));
-        string && format = _load_config("format", "@content");
-        bool isMerge = _string2bool(_load_config("merge", "1"));
-
-        labor::Logger::defaultLogger_.reset(new labor::Logger(filepath, format, maxFileSize, isMerge));
-    }
-    return weak_ptr<labor::Logger>(labor::Logger::defaultLogger_);
-}
-
-
-labor::Logger::Logger(const string & filepath, const string & formatter, size_t maxsize, bool merge) 
-    : filepath_(filepath), format_(formatter), maxsize_(maxsize), enableMerge_(merge)
-{
+labor::Logger::Logger(labor::Logger::LoggerLevel level, const char * filename, int line) 
+    : level_(level), source_(filename), line_(line) {
 }
 
 
 void
-labor::Logger::write(labor::Logger::LoggerLevel level, const string & filename, int line, const string & content, ...) {
-    _logger_queue_push(this->filepath_, (int)level, filename, line, content);
+labor::Logger::write(const string & content, ...) {
+    _logger_queue_push(this->filepath_, (int)level_, source_, line_, content);
 }

@@ -4,47 +4,49 @@
 #include <memory>
 #include <string>
 
+
+#define LOG_DEBUG \
+    (labor::Logger(labor::Logger::LV_DEBUG, __FILE__, __LINE__).write)
+
+#define LOG_INFO \
+    (labor::Logger(labor::Logger::LV_INFO, __FILE__, __LINE__).write)
+
+#define LOG_WARNING \
+    (labor::Logger(labor::Logger::LV_WARNING, __FILE__, __LINE__).write)
+
+#define LOG_ERROR \
+    (labor::Logger(labor::Logger::LV_ERROR, __FILE__, __LINE__).write)
+
+#endif
+
 namespace labor
 {
+
+    // FIXIT: `Logger` class is not a good design now..
     class Logger
     {
     public:
         enum LoggerLevel
         {
-            DEBUG = 0,
-            INFO = 1,
-            WARNING = 2,
-            ERR = 3
+            LV_DEBUG = 0,
+            LV_INFO = 1,
+            LV_WARNING = 2,
+            LV_ERROR = 3
         };
 
-        static std::weak_ptr<Logger> defaultLogger();
-
     public:
-        Logger(const std::string & filepath, const std::string & formatter, size_t maxsize, bool merge);
-        void write(LoggerLevel level, const std::string & filename, int line, const std::string & content, ...);
+        Logger(LoggerLevel level, const char * filename, int line);
+        void write(const std::string & content, ...);
 
     private:
-        std::string filepath_;
-        std::string format_;
-        int maxsize_;
-        bool enableMerge_;
+        static std::string filepath_;
+        static std::string format_;
+        static int maxsize_;
+        static bool merge_;
+
+        const char * source_;
+        int line_;
+        LoggerLevel level_;
         
-        static std::shared_ptr<Logger> defaultLogger_;
     };
 }
-
-#define LOG_INIT() auto logger = labor::Logger::defaultLogger().lock();
-
-#define LOG_DEBUG(x) \
-    logger->write(labor::Logger::DEBUG, __FILE__, __LINE__, ##x##)
-
-#define LOG_INFO(x) \
-    logger->write(labor::Logger::INFO, __FILE__, __LINE__, ##x##)
-
-#define LOG_WARNING(x) \
-    logger->write(labor::Logger::WARNING, __FILE__, __LINE__, ##x##)
-
-#define LOG_ERROR(x) \
-    logger->write(labor::Logger::ERROR, __FILE__, __LINE__, ##x##)
-
-#endif

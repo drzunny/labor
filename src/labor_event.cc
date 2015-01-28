@@ -41,7 +41,6 @@ public:
             }
             else
             {
-                LOG_INIT();
                 LOG_ERROR("invalid msg: %s", p_msg.c_str());
             }
         }
