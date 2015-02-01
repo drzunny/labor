@@ -7,7 +7,7 @@
 
 # Build results
 
-[Dd]ebug/
+[D]ebug/
 [Rr]elease/
 x64/
 build/
@@ -154,3 +154,4 @@ $RECYCLE.BIN/
 # Mac desktop service store files
 .DS_Store
 /deps
+/src/Debug

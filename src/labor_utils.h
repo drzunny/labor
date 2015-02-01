@@ -40,7 +40,9 @@ namespace labor
     class JsonDoc
     {
     public:
+        // TODO: ADD RValue support
         JsonDoc();
+        JsonDoc(JsonDoc && d) { doc_ = d.doc_; };
         ~JsonDoc();
 
         static std::string encode(const JsonDoc & doc);
@@ -49,18 +51,32 @@ namespace labor
         bool has(const std::string & name) const;
         bool isNull() const;
 
+        template<class T>
+        void set(const std::string & name, const T & s);
+        template<class T> 
+        void push(const std::string & name, T & val);
+
+
         JsonDoc get(const std::string & name);
         JsonDoc getIndex(int i);
 
+        // Get values
         int toInt() const;
         int64_t toInt64() const;
         std::string toString() const;
         double toDouble() const;
         bool toBool() const;
 
+        // Check Values
+        bool isInt(const std::string & name = "") const;
+        bool isInt64(const std::string & name = "") const;
+        bool isString(const std::string & name = "") const;
+        bool isDouble(const std::string & name = "") const;
+        bool isBool(const std::string & name = "") const;
+
     private:
         std::shared_ptr<_jsondoc_impl> doc_;
-        labor::JsonDoc::JsonDoc(const labor::JsonDoc & o) {};
+        JsonDoc::JsonDoc(const JsonDoc & o) {};
     };
 }
 

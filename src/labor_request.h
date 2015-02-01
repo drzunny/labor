@@ -3,15 +3,17 @@
 
 #include <string>
 #include <memory>
+#include "labor_utils.h"
 
 namespace labor
 {
     class Response;
+    class _request_impl;
 
     class Request
     {
     public:
-        Request();
+        Request(const std::string & jsonMsg);
         ~Request();
 
         static bool isValid(const std::string & msg);
@@ -20,6 +22,8 @@ namespace labor
         std::shared_ptr<Response> waitForResponse();
 
     private:
+        std::shared_ptr<_request_impl> request_;
+        JsonDoc body_;
     };
 }
 

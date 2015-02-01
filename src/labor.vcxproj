@@ -76,6 +76,8 @@
       <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;_SCL_SECURE_NO_WARNINGS;NDEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <StringPooling>true</StringPooling>
+      <ExceptionHandling>Sync</ExceptionHandling>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -100,6 +102,7 @@
   <ItemGroup>
     <ClInclude Include="labor.h" />
     <ClInclude Include="labor_connect.h" />
+    <ClInclude Include="labor_def.h" />
     <ClInclude Include="labor_event.h" />
     <ClInclude Include="labor_log.h" />
     <ClInclude Include="labor_opt.h" />

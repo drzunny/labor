@@ -1,6 +1,7 @@
 #include "labor_utils.h"
 
 #include <io.h>
+#include <string.h>
 #include <algorithm>
 #include <boost/algorithm/string.hpp>
 #include <boost/property_tree/ptree.hpp>
@@ -127,6 +128,23 @@ labor::timestamp_now_m()  {
 
 // For Json
 // ---------------------------------------
+template<typename T>
+static inline void
+_set_json_object(rapidjson::Document & d, const char * k, T && v)  {
+    using namespace rapidjson;
+    Value key(StringRef(k));
+    Value val(v);
+    d.AddMember(key, val, d.GetAllocator());
+}
+
+
+static inline const rapidjson::Value &
+_check_json_object(const rapidjson::Document & d, const char * key = "") {
+    if (strcmp(key, "") == 0)
+        return d[key];
+    return d;
+}
+
 class labor::_jsondoc_impl
 {
 public:
@@ -138,18 +156,53 @@ public:
     bool isNull() { return d_.IsNull(); }
     bool has(const string & name) { return d_.HasMember(name.c_str()); }
 
+    void set(const string & name, string & s) { _set_json_object(d_, name.c_str(), rapidjson::StringRef(s.c_str())); }
+    void set(const string & name, int i) { _set_json_object(d_, name.c_str(), i); }
+    void set(const string & name, int64_t i)    { _set_json_object(d_, name.c_str(), i); }
+    void set(const string & name, double d) { _set_json_object(d_, name.c_str(), d); }
+    void set(const string & name, bool b) { _set_json_object(d_, name.c_str(), b); }
+    void set(const string & name, rapidjson::Document & d) { _set_json_object(d_, name.c_str(), d); }
+
+    void push(const string & name, const string & v)    {}
+    void push(const string & name, int v)    {}
+    void push(const string & name, int64_t v)    {}
+    void push(const string & name, double v)    {}
+    void push(const string & name, bool v)    {}
+    void push(const string & name, rapidjson::Document & v)    {}
+
     int toInt() const { return d_.GetInt(); }
     int64_t toInt64() const { return d_.GetInt64(); }
     string toString() const { return d_.GetString(); }
     double toDouble() const { return d_.GetDouble(); }
     bool toBool() const { return d_.GetBool(); }
 
+    bool isInt(const std::string & name = "") const { auto & v = _check_json_object(d_, name.c_str()); return v.IsInt(); }
+    bool isInt64(const std::string & name = "") const   { auto & v = _check_json_object(d_, name.c_str()); return v.IsInt64(); }
+    bool isString(const std::string & name = "") const  { auto & v = _check_json_object(d_, name.c_str()); return v.IsString(); }
+    bool isDouble(const std::string & name = "") const  { auto & v = _check_json_object(d_, name.c_str()); return v.IsDouble(); }
+    bool isBool(const std::string & name = "") const    { auto & v = _check_json_object(d_, name.c_str()); return v.IsBool(); }
+
 private:
     rapidjson::Document d_;
     _jsondoc_impl(const _jsondoc_impl & o) {}
 };
 
+// Set Values
+template<string> void labor::JsonDoc::set(const string & name, string & v) { doc_->set(name, v); }
+template<int> void labor::JsonDoc::set(const string & name, int & v) { doc_->set(name, v); }
+template<int64_t> void labor::JsonDoc::set(const string & name, int64_t & v) { doc_->set(name, v); }
+template<double> void labor::JsonDoc::set(const string & name, double & v) { doc_->set(name, v); }
+template<bool> void labor::JsonDoc::set(const string & name, bool & v) { doc_->set(name, v); }
+template<labor::JsonDoc> void labor::JsonDoc::set(const string & name, labor::JsonDoc & v)  { doc_->set(name, v); }
 
+template<string> void labor::JsonDoc::push(const string & name, string & v) { doc_->push(name, v); }
+template<int> void labor::JsonDoc::push(const string & name, int & v) { doc_->set(push, v); }
+template<int64_t> void labor::JsonDoc::push(const string & name, int64_t & v) { doc_->push(name, v); }
+template<double> void labor::JsonDoc::push(const string & name, double & v) { doc_->push(name, v); }
+template<bool> void labor::JsonDoc::push(const string & name, bool & v) { doc_->push(name, v); }
+template<labor::JsonDoc> void labor::JsonDoc::push(const string & name, labor::JsonDoc & v) { doc_->push(name, v); }
+
+// Get values
 labor::JsonDoc::JsonDoc() : doc_(new labor::_jsondoc_impl()) { }
 labor::JsonDoc::~JsonDoc() {}
 bool labor::JsonDoc::isNull() const  { return doc_->isNull(); }
@@ -159,6 +212,24 @@ int64_t labor::JsonDoc::toInt64() const { return doc_->toInt64(); }
 string labor::JsonDoc::toString() const { return doc_->toString(); }
 double labor::JsonDoc::toDouble() const { return doc_->toDouble(); }
 bool labor::JsonDoc::toBool() const { return doc_->toBool(); }
+
+labor::JsonDoc
+labor::JsonDoc::get(const string & name)    {
+    return labor::JsonDoc();
+}
+
+
+labor::JsonDoc
+labor::JsonDoc::getIndex(int i)   {
+    return labor::JsonDoc();
+}
+
+// Check Values
+bool labor::JsonDoc::isInt(const string & name)const { return doc_->isInt(name); }
+bool labor::JsonDoc::isInt64(const string & name) const { return doc_->isInt64(name); }
+bool labor::JsonDoc::isString(const string & name)const { return doc_->isString(name); }
+bool labor::JsonDoc::isDouble(const string & name) const { return doc_->isDouble(name); }
+bool labor::JsonDoc::isBool(const string & name) const { return doc_->isBool(name); }
 
 string
 labor::JsonDoc::encode(const labor::JsonDoc & doc)   {
