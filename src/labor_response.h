@@ -1,6 +1,7 @@
 #ifndef __LABOR_RESPONSE_H__
 #define __LABOR_RESPONSE_H__
 
+#include <string>
 #include <memory>
 
 namespace labor
@@ -10,10 +11,11 @@ namespace labor
     class Response
     {
     public:
-        Response();
+        Response(const std::string & action, int code);
         ~Response();
 
-        void send();
+        void setHeader(const std::string & name, const std::string & val);        
+        void send(const std::string & body);
 
     private:
         std::shared_ptr<_response_impl> response_;

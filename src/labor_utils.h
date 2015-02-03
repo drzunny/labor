@@ -51,9 +51,9 @@ namespace labor
         bool has(const std::string & name) const;
         bool isNull() const;
 
-        template<class T>
-        void set(const std::string & name, const T & s);
-        template<class T> 
+        template<typename T>
+        void set(const std::string & name, T & s);
+        template<typename T> 
         void push(const std::string & name, T & val);
 
 

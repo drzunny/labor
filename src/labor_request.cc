@@ -7,7 +7,10 @@ using namespace std;
 * The Helper Functions
 * ------------------------------------
 */
+static labor::JsonDoc &&
+_labor_make_request(const char * action, const char * data) {
 
+}
 
 /* ------------------------------------
 * The PIMPL Class
@@ -52,5 +55,5 @@ labor::Request::send()  {
 
 shared_ptr<labor::Response>
 labor::Request::waitForResponse()   {
-    return nullptr;
+    return NULL;
 }
