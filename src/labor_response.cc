@@ -1,4 +1,5 @@
 #include "labor_response.h"
+#include "labor_connect.h"
 #include "labor_utils.h"
 #include "labor_def.h"
 
@@ -39,8 +40,13 @@ public:
         body_.set(name, const_cast<string&>(val));
     }
 
-    void send(const string & body) {
+    void setBody(const string & body)   {
         body_.set(__S("data"), const_cast<string&>(body));
+    }
+
+    void send(const labor::Response::ConnectorRef & con) {
+        auto && data = labor::JsonDoc::encode(body_);
+        con->send(data);
     }
 private:
     labor::JsonDoc body_;
@@ -69,6 +75,6 @@ labor::Response::setHeader(const string & name, const string & val)   {
 
 
 void
-labor::Response::send(const string & body) {
-    response_->send(body);
+labor::Response::send(const labor::Response::ConnectorRef & con) {
+    response_->send(con);
 }   

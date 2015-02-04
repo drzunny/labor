@@ -1,4 +1,5 @@
 #include "labor_utils.h"
+#include "labor_def.h"
 
 #include <io.h>
 #include <string.h>
@@ -29,14 +30,25 @@ static ptree s_conf_properties;
 static string s_labor_conf;
 
 
+static void
+_default_conf_assignment(ptree & conf)  {
+    conf.add("services.service_path", "./services");
+    conf.add("labor.pubsub_addr", "127.0.0.1:1808");
+}
+
+
 static inline ptree &
 _read_ini_config(const string & file, bool * ok = NULL)
-{
-    if (s_conf_properties.empty())
+{    
+    static bool __is_init = false;
+    if (!__is_init)
     {
+        __is_init = true;
+        s_conf_properties = ptree();
         if (!labor::fileExists(file))
         {
             _SET_IF_NOT_NULL(ok, false);
+            _default_conf_assignment(s_conf_properties);
             return s_conf_properties;
         }
         read_ini(file, s_conf_properties);
@@ -93,8 +105,14 @@ string
 labor::readConfig(const string & name, const string & dval) {
     bool ok = true;
     auto ini = _read_ini_config("", &ok);
-    assert(ok == false);
 
+#ifndef LABOR_DEBUG
+    // if use Labor as production,
+    LABOR_ASSERT(ok == true, "labor.conf cannot found!");
+#endif
+
+    if (ini.count(name) == 0)
+        return dval;
     string v = ini.get<string>(name);
     if (v.empty()) return dval;
     return v;

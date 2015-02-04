@@ -16,7 +16,7 @@ namespace labor
     {
     public:
         static void setupEnv(const std::vector<std::string> & paths);
-        static void init();
+        static bool init();
         static void dispose();
 
         void execute() const;

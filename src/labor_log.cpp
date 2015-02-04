@@ -164,10 +164,10 @@ _logger_queue_push(const string & filepath, int level,
 * The class implement
 * ------------------------------------
 */
-string labor::Logger::filepath_ = _load_config("file_path", "./");
-string labor::Logger::format_ = _load_config("format", "@content");
-int labor::Logger::maxsize_ = _string2int(_load_config("file_size", "10"));
-bool labor::Logger::merge_ = _string2bool(_load_config("merge", "1"));
+string labor::Logger::filepath_ = _load_config("log.file_path", "./");
+string labor::Logger::format_ = _load_config("log.format", "@content");
+int labor::Logger::maxsize_ = _string2int(_load_config("log.file_size", "10"));
+bool labor::Logger::merge_ = _string2bool(_load_config("log.merge", "1"));
 
 
 labor::Logger::Logger(labor::Logger::LoggerLevel level, const char * filename, int line) 

@@ -54,7 +54,7 @@ private:
     void _init()
     {
         auto packages = labor::readInstallModules();
-        auto pubsub_addr = labor::readConfig("labor", "pubsub_addr");
+        auto pubsub_addr = labor::readConfig("labor.pubsub_addr");
 
         for (auto p : packages)
         {
@@ -75,6 +75,7 @@ labor::Event::Event()
 
 labor::Event::~Event()
 {
+    event_.reset();
 }
 
 
