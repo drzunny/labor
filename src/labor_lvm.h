@@ -1,15 +1,13 @@
-#ifndef __LABOR_PYTHON_VM_H__
-#define __LABOR_PYTHON_VM_H__
+#ifndef __LABOR_LUAVM_H__
+#define __LABOR_LUAVM_H__
 
-#include <vector>
 #include <string>
+#include <vector>
 #include <memory>
-#include <Python.h>
 
 namespace labor
 {
-    // The Python VM Manager for `labor`
-    class PVM
+    class LVM
     {
     public:
         static void setupEnv(const std::vector<std::string> & paths);
@@ -19,10 +17,7 @@ namespace labor
         void execute() const;
 
     private:
-        static std::shared_ptr<PVM> s_pvm_;
-
-        PVM() {}
-        ~PVM() {}
+        static std::shared_ptr<LVM> s_pvm_;
     };
 }
 

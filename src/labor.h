@@ -16,5 +16,7 @@
 
 // Python Extension
 #include "labor_pvm.h"
+// Lua Extension
+#include "labor_lvm.h"
 
 #endif

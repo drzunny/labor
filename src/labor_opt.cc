@@ -2,6 +2,7 @@
 #include "labor_def.h"
 
 #include <stdio.h>
+#include <stdarg.h>
 #include <string.h>
 
 using namespace std;
@@ -21,11 +22,11 @@ static const char * s_labor_help = "\
 labor <options>\
 [Options]\n \
 \n\
---conf <file>\t\tthe path of `labor.conf`, default to `./labor.conf`\n\
---disabled <python|lua|none>\t\tdisable the service of python or lua, default to none(enable py and lua)\n\
---mode <debug|normal|optimize>\t\t enable labor run in different mode, default to normal\n\
--h/--help\t\tshow this help\n\
--v/--version\t\tshow version\n";
+--conf <file>               the path of `labor.conf`, default to `./labor.conf`\n\n\
+--disabled <py|lua|none>    disable the service, default to none\n\n\
+--mode <debug|normal|fast>  run in different mode, default to normal\n\n\
+-h/--help                   show this help\n\n\
+-v/--version                show version\n";
 
 
 /*-----------------------
@@ -39,8 +40,17 @@ _options_is(const char * cur, const char * target)   {
 
 
 static inline bool
-_options_in(const char * cur, ...)   {
-
+_options_in(const char * cur, int n, ...)   {
+    va_list args;
+    // because the params is next to `int n`
+    va_start(args, n);
+    for (auto i = 0; i < n; i++)    {
+        const char * s = va_arg(args, const char*);
+        if (_options_is(cur, s))
+            return true;
+    }
+    va_end(args);
+    return false;
 }
 
 
@@ -57,11 +67,11 @@ labor::Options::parse(int argc, char * argv[])  {
     // if i is a odd-number, it means it's a option name
     // else, position i of the argv is the value of position i-1
     // but when you meet -h or -v..... just return.
-    for (int i = 0; i < argc; i++)  {
-        if (_options_in(argv[i], "-h", "--help", "-v", "--version"))
+    for (int i = 1; i < argc; i++)  {
+        if (_options_in(argv[i], 4, "-h", "--help", "-v", "--version"))
         {
             // the priority of version is higher than help
-            if (_options_in(argv[i], "-v", "--version"))    {
+            if (_options_in(argv[i], 2, "-v", "--version"))    {
                 s_option_has_version = true;
             }   else    {
                 s_option_has_help = true;
@@ -71,7 +81,7 @@ labor::Options::parse(int argc, char * argv[])  {
         if (i % 2 != 0) 
         {
             // if odd-number is not a option
-            if (!_options_in(argv[i], "--conf", "--mode", "--disabled"))
+            if (!_options_in(argv[i], 3, "--conf", "--mode", "--disabled"))
                 return false;
         }
         else
@@ -79,6 +89,7 @@ labor::Options::parse(int argc, char * argv[])  {
 
         }
     }
+    return true;
 }
 
 
