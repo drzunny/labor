@@ -1,5 +1,6 @@
 #include "labor_request.h"
 #include "labor_response.h"
+#include "labor_def.h"
 
 using namespace std;
 
@@ -7,10 +8,7 @@ using namespace std;
 * The Helper Functions
 * ------------------------------------
 */
-static labor::JsonDoc &&
-_labor_make_request(const char * action, const char * data) {
 
-}
 
 /* ------------------------------------
 * The PIMPL Class
@@ -18,19 +16,31 @@ _labor_make_request(const char * action, const char * data) {
 */
 class labor::_request_impl
 {
-    
+public:
+    _request_impl(string && jsonMsg) :
+        doc_(labor::JsonDoc::decode(jsonMsg)) {}
+
+
+    void send() {
+        // send request to service
+    }
+
+private:
+    labor::JsonDoc doc_;
 };
 
 /* ------------------------------------
 * The Class Implementation
 * ------------------------------------
 */
-labor::Request::Request(const string & jsonMsg) : body_(labor::JsonDoc::decode(jsonMsg))
+labor::Request::Request(string && jsonMsg)
+    : request_(new _request_impl(std::move(jsonMsg)))
 {
 }
 
 
 labor::Request::~Request()  {
+    request_.reset();
 }
 
 
@@ -50,10 +60,5 @@ labor::Request::isValid(const string & msg)   {
 
 void
 labor::Request::send()  {
-
-}
-
-shared_ptr<labor::Response>
-labor::Request::waitForResponse()   {
-    return NULL;
+    request_->send();
 }
