@@ -36,7 +36,7 @@ namespace labor
 
     public:
         Logger(LoggerLevel level, const char * filename, int line);
-        void write(const std::string & content, ...);
+        void write(const char * content, ...);
 
     private:
         static std::string filepath_;

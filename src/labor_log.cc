@@ -1,5 +1,6 @@
 #include "labor_log.h"
 #include "labor_utils.h"
+#include "labor_def.h"
 
 #include <assert.h>
 #include <pthread.h>
@@ -21,9 +22,9 @@ using namespace std;
 
 /*
 *   TODO.   i want to use other logger library to instead my `Logger` implement.
-            but all of them are required fully C++11 support...
-            my production environment's GCC is 4.4.7
-            so, i just use POSIX Thread to implement it by myself.
+but all of them are required fully C++11 support...
+my production environment's GCC is 4.4.7
+so, i just use POSIX Thread to implement it by myself.
 */
 
 
@@ -82,10 +83,31 @@ _logger_level_string(labor::Logger::LoggerLevel level)  {
 * ------------------------------------
 */
 
+struct _logger_struct {
+    char text[LABOR_LOG_BUFFER];
+    char logpath[256];
+    char filepath[256];
+    int line;
+    int level;
+};
+
 static bool _logger_isstartup = false;
 static pthread_t _logger_thread;
-static queue<string> _logger_queue;
+static queue<_logger_struct> _logger_queue;
 static atomic<bool> _logger_lock = ATOMIC_VAR_INIT(false);  // use spinlock to wait
+
+static void
+_logger_queue_write(const _logger_struct * log)  {
+    printf("%s\n", log->text);
+    // TODO: write file
+}
+
+
+static string
+_logger_queue_datefile(const char * fixpath) {
+    return "";
+}
+
 
 static void
 _logger_queue_resume() {
@@ -113,6 +135,7 @@ _logger_queue_wait(size_t secs)   {
         if (now - ts >= secs * 1000)
         {
             ts = now;
+            // this operation will unlock the spinlock, it equal to `break`
             _logger_queue_resume();
         }
     }
@@ -134,6 +157,9 @@ _logger_queue_handler(void * args) {
             continue;
         }
         // write
+        auto log = _logger_queue.front();
+        _logger_queue_write(&log);
+        _logger_queue.pop();
     }
 }
 
@@ -152,8 +178,17 @@ _logger_queue_start()   {
 
 
 static void
-_logger_queue_push(const string & filepath, int level, 
-                   const string & filename, int line, const string & content, ...)    {
+_logger_queue_push(const string & logpath, int level,
+const string & filename, int line, const string & content)    {
+    _logger_struct ls;
+    auto trueFile = _logger_queue_datefile(logpath.c_str());
+    memcpy(ls.logpath, trueFile.c_str(), trueFile.length() + 1);
+    memcpy(ls.filepath, filename.c_str(), filename.length() + 1);
+    memcpy(ls.text, content.c_str(), content.length() + 1);
+    ls.line = line;
+    ls.level = level;
+    
+    _logger_queue.push(ls);
 
     // if push success, resume the log thread immediately.
     _logger_queue_resume();
@@ -170,12 +205,19 @@ int labor::Logger::maxsize_ = _string2int(_load_config("log.file_size", "10"));
 bool labor::Logger::merge_ = _string2bool(_load_config("log.merge", "1"));
 
 
-labor::Logger::Logger(labor::Logger::LoggerLevel level, const char * filename, int line) 
+labor::Logger::Logger(labor::Logger::LoggerLevel level, const char * filename, int line)
     : level_(level), source_(filename), line_(line) {
+    _logger_queue_start();
 }
 
 
 void
-labor::Logger::write(const string & content, ...) {
-    _logger_queue_push(this->filepath_, (int)level_, source_, line_, content);
+labor::Logger::write(const char * content, ...) {
+    char log_buffer[LABOR_LOG_BUFFER];
+    memset(log_buffer, 0, LABOR_LOG_BUFFER);
+    va_list vars;
+    va_start(vars, content);
+    vsprintf(log_buffer, content, vars);
+    va_end(vars);
+    _logger_queue_push(this->filepath_, (int)level_, source_, line_, __S(log_buffer));
 }

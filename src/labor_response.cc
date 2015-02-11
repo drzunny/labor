@@ -36,7 +36,7 @@ public:
     }
 
     void setHeader(const string & name, const string & val) {
-        LABOR_ASSERT(name.compare("data"), "Heade name cannot be `data`");
+        LABOR_ASSERT(name.compare("data"), "Header name cannot be `data`");
         body_.set(name, const_cast<string&>(val));
     }
 

@@ -25,11 +25,6 @@ public:
         return doc_.get("action").toString();
     }
 
-    int send() {
-        // send request to service
-        return 200;
-    }
-
 private:
     labor::JsonDoc doc_;
 };
