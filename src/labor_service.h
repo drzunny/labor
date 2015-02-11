@@ -1,16 +1,21 @@
 #ifndef __LABOR_SERVICE_H__
 #define __LABOR_SERVICE_H__
 
+#include "labor_utils.h"
+
 #include <string>
 #include <memory>
 
 namespace labor
 {
-    class PVM;
-    class LVM;
+    class _service_impl;
+    class Request;
 
     class Service
     {
+        /*
+        * As a Module
+        */
     public:
         enum ServiceType
         {
@@ -18,15 +23,31 @@ namespace labor
             Lua = 1
         };
 
-        static bool addService(const std::string & name, const std::string & path);
-        static std::shared_ptr<Service> loadService(const std::string & name, bool *found = NULL);
+        static void init();
+        static bool addHandler(const std::string & name, const std::string & script);
+        static int handleRequest(const Request * req, std::string & error = std::string(""));
+        static std::string lastError();
 
+
+        /*
+        * As a Instance
+        */
     public:
         ~Service();
 
-    private:
-        Service(const std::string & name, ServiceType type, const std::string & path);
+        void publish(const JsonDoc & args);
 
+        /*
+            These methods are not ready not. But they will be implemented at next version.
+        */
+#if defined(LABOR_IS_READY)
+        void requestTo(const JsonDoc & args, int timeout = 3000);
+#endif
+
+    private:
+        std::shared_ptr<_service_impl> service_;
+
+        Service(ServiceType type, const std::string & action, const std::string & handlePath);
     };
 }
 

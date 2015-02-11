@@ -18,9 +18,12 @@ namespace labor
 
         static bool isValid(const std::string & msg);
 
-        void send();
+        std::string actionName();
+        std::string lastError();
+        int send();
 
     private:
+        std::string lastError_;
         std::shared_ptr<_request_impl> request_;
     };
 }

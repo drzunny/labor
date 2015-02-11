@@ -1,5 +1,5 @@
 #include "labor_request.h"
-#include "labor_response.h"
+#include "labor_service.h"
 #include "labor_def.h"
 
 using namespace std;
@@ -21,8 +21,13 @@ public:
         doc_(labor::JsonDoc::decode(jsonMsg)) {}
 
 
-    void send() {
+    string actionName() {
+        return doc_.get("action").toString();
+    }
+
+    int send() {
         // send request to service
+        return 200;
     }
 
 private:
@@ -58,7 +63,19 @@ labor::Request::isValid(const string & msg)   {
 }
 
 
-void
+string
+labor::Request::actionName() {
+    return request_->actionName();
+}
+
+
+string
+labor::Request::lastError() {
+    return lastError_;
+}
+
+
+int
 labor::Request::send()  {
-    request_->send();
+    return labor::Service::handleRequest(this, lastError_);
 }
