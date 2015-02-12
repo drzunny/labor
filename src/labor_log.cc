@@ -44,26 +44,15 @@ _string2bool(const string && s) {
 }
 
 
-static string
-_format_string(const string & content, va_list args) {
-    return "";
-}
-
-
 static inline string
 _load_config(const string & name, const string & dval = "")   {
     return labor::readConfig(name, dval);
 }
 
-static string
-_now_string() {
-    uint64_t now = labor::timestamp_now();
-    return "";
-}
-
 
 static string
-_logger_level_string(labor::Logger::LoggerLevel level)  {
+_logger_level_string(int iLevel)  {
+    labor::Logger::LoggerLevel level = (labor::Logger::LoggerLevel)iLevel;
     switch (level)
     {
     case labor::Logger::LV_DEBUG:
@@ -75,6 +64,22 @@ _logger_level_string(labor::Logger::LoggerLevel level)  {
     default:
         return "[ INFO ] ";
     }
+}
+
+
+static inline bool
+_logger_file_exists(const char * filepath)  {
+    FILE * f = fopen(filepath, "r");
+    if (f == NULL)
+        return false;
+    fclose(f);
+    return true;
+}
+
+static inline FILE *
+_logger_file_reopen(FILE * old, const char * filepath)  {
+    fclose(old);
+    return fopen(filepath, "a");
 }
 
 
@@ -93,19 +98,53 @@ struct _logger_struct {
 
 static bool _logger_isstartup = false;
 static pthread_t _logger_thread;
-static queue<_logger_struct> _logger_queue;
+static deque<_logger_struct> _logger_queue;
 static atomic<bool> _logger_lock = ATOMIC_VAR_INIT(false);  // use spinlock to wait
 
 static void
 _logger_queue_write(const _logger_struct * log)  {
+    static string s_logfile_path = "";
+    static FILE * s_logfile_handle = NULL;
+
+    string text = "$level>> $file | $line | $datetime | $text";
+    int level = log->level;
+    if (!labor::Logger::format().empty())
+        text = labor::Logger::format();
+
+    labor::string_replace(text, __S("$level"), _logger_level_string(level));
+    labor::string_replace(text, __S("$file"), log->filepath);
+    labor::string_replace(text, __S("$line"), std::to_string(log->line));
+    labor::string_replace(text, __S("$datetime"), labor::time_now_string());
+    labor::string_replace(text, __S("$text"), log->text);
+    
     printf("%s\n", log->text);
-    // TODO: write file
+    
+    // Write to file
+    // if log file has been changed, close the old FILE and reopen the new one.
+    if (s_logfile_path.compare(log->logpath) != 0)  {
+        if (s_logfile_handle != NULL)
+            fclose(s_logfile_handle);        
+        s_logfile_path = log->logpath;        
+        if (!_logger_file_exists(log->logpath)) 
+            s_logfile_handle = fopen(log->logpath, "w");
+        else
+            s_logfile_handle = fopen(log->logpath, "a");
+
+        LABOR_ASSERT(s_logfile_handle != NULL, "cannot open logfile");
+    }
+    fprintf(s_logfile_handle, text.c_str());
+    fflush(s_logfile_handle);    
 }
 
 
 static string
-_logger_queue_datefile(const char * fixpath) {
-    return "";
+_logger_queue_datefile() {
+    string s = labor::Logger::filePath();
+    s.append("labor.log");
+    char datestr[100] = { 0 };
+    time_t now = time(NULL);
+    strftime(datestr, 10, ".%Y%m%d", localtime(&now));
+    return s.append(datestr);
 }
 
 
@@ -156,10 +195,13 @@ _logger_queue_handler(void * args) {
             _logger_queue_wait(30);
             continue;
         }
-        // write
-        auto log = _logger_queue.front();
+        // FIXIT: queue is not thread-safe container, if queue is writting when you read it...
+        auto log = _logger_queue.front();        
         _logger_queue_write(&log);
-        _logger_queue.pop();
+        _logger_queue.pop_front();
+        // resize the queue
+        if (_logger_queue.size() == 0)
+            _logger_queue.shrink_to_fit();
     }
 }
 
@@ -171,24 +213,23 @@ _logger_queue_start()   {
 
     // Create the Logger thread
     int ret = pthread_create(&_logger_thread, NULL, _logger_queue_handler, NULL);
-    BOOST_ASSERT_MSG(ret != 0, "Create Logger thread error");
+    LABOR_ASSERT(ret == 0, "Create Logger thread error");
 
     _logger_isstartup = true;
 }
 
 
 static void
-_logger_queue_push(const string & logpath, int level,
-const string & filename, int line, const string & content)    {
+_logger_queue_push(int level, const string & filename, int line, const string & content)    {
     _logger_struct ls;
-    auto trueFile = _logger_queue_datefile(logpath.c_str());
+    auto trueFile = _logger_queue_datefile();
     memcpy(ls.logpath, trueFile.c_str(), trueFile.length() + 1);
     memcpy(ls.filepath, filename.c_str(), filename.length() + 1);
     memcpy(ls.text, content.c_str(), content.length() + 1);
     ls.line = line;
     ls.level = level;
     
-    _logger_queue.push(ls);
+    _logger_queue.push_back(ls);
 
     // if push success, resume the log thread immediately.
     _logger_queue_resume();
@@ -200,7 +241,7 @@ const string & filename, int line, const string & content)    {
 * ------------------------------------
 */
 string labor::Logger::filepath_ = _load_config("log.file_path", "./");
-string labor::Logger::format_ = _load_config("log.format", "@content");
+string labor::Logger::format_ = _load_config("log.format", "$level>> $file | $line | $datetime | $text");
 int labor::Logger::maxsize_ = _string2int(_load_config("log.file_size", "10"));
 bool labor::Logger::merge_ = _string2bool(_load_config("log.merge", "1"));
 
@@ -219,5 +260,5 @@ labor::Logger::write(const char * content, ...) {
     va_start(vars, content);
     vsprintf(log_buffer, content, vars);
     va_end(vars);
-    _logger_queue_push(this->filepath_, (int)level_, source_, line_, __S(log_buffer));
+    _logger_queue_push((int)level_, source_, line_, __S(log_buffer));
 }

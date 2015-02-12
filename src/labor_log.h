@@ -35,6 +35,10 @@ namespace labor
         };
 
     public:
+        static bool isMerge() { return merge_; }
+        static std::string & filePath() { return filepath_; }
+        static std::string & format() { return format_; }
+
         Logger(LoggerLevel level, const char * filename, int line);
         void write(const char * content, ...);
 

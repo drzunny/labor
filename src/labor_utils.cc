@@ -39,7 +39,7 @@ _default_conf_assignment(ptree & conf)  {
 
 static inline ptree &
 _read_ini_config(const string & file, bool * ok = NULL)
-{    
+{
     static bool __is_init = false;
     if (!__is_init)
     {
@@ -129,6 +129,11 @@ labor::string_split(const string & s, const string & delm)    {
 }
 
 
+void
+labor::string_replace(string & src, const string & old, const string & now)   {
+    boost::replace_all(src, old, now);
+}
+
 // For time
 // ----------------------------------------
 uint64_t
@@ -139,8 +144,25 @@ labor::timestamp_now()  {
 
 uint64_t
 labor::timestamp_now_m()  {
-    BOOST_ASSERT_MSG(false, "the milliseconds version is not implemented now...");
+    LABOR_ASSERT(false, "the milliseconds version is not implemented now...");
     return 0;
+}
+
+
+string
+labor::time_now_string()   {
+    char buf[25];
+    time_t now = time(0);
+
+    strftime(buf, 25, "%Y-%m-%d %X", localtime(&now));
+    return __S(buf);
+}
+
+
+string
+labor::time_utc_now_string()   {
+    LABOR_ASSERT(false, "the UTC version is not implemented now...");
+    return "";
 }
 
 

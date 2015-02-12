@@ -61,7 +61,7 @@ int main(int argc, char * argv[])
     if (labor::Options::checkAndShowHelp())
         return 0;
     if (labor::Options::checkAndShowVersion())
-        return 0;
+        return 0;    
 
     // Prepare
     _labor_sayhello();
@@ -71,7 +71,7 @@ int main(int argc, char * argv[])
         printf("labor prepare is fail....\n");
         return -1;
     }    
-
+    
     // start the event loop
     labor::Event ev;
     ev.run();

@@ -3,6 +3,7 @@
 
 #include "labor_utils.h"
 #include "labor_opt.h"
+#include "labor_log.h"
 
 // labor's request and response
 #include "labor_request.h"

@@ -25,6 +25,7 @@ namespace labor
     // for string
     // --------------------------------------------
     std::vector<std::string> string_split(const std::string & s, const std::string & delm);
+    void string_replace(std::string & src, const std::string & old, const std::string & now);
 
 
 
@@ -32,6 +33,8 @@ namespace labor
     // --------------------------------------------
     uint64_t timestamp_now();
     uint64_t timestamp_now_m();
+    std::string time_now_string();
+    std::string time_utc_now_string();
 
 
     // for Json
