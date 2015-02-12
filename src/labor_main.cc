@@ -7,14 +7,14 @@
 #define LABOR_OPERATION_START(op) \
     printf("startup operation<%s>........\t\t", #op);\
     if ((op)) printf("[ OK ]\n");\
-    else  { printf("[FAIL]\n"); ok = false;}
+        else  { printf("[FAIL]\n"); ok = false;}
 
 static const char * s_running_mode[] = { "DEBUG", "NORMAL", "OPTIMIZED" };
 
 static const char *
 _labor_running_mode()   {
     auto mode = labor::Options::runningMode();
-    return s_running_mode[(int)mode];    
+    return s_running_mode[(int)mode];
 }
 
 static bool
@@ -26,8 +26,8 @@ _labor_prepare(int argc, char * argv[])    {
     if (labor::Options::enableLua())    {
         LABOR_OPERATION_START(labor::LVM::init())
     }
-    
-    printf("\nlabor.conf's path:      \"%s\"\nrunning mode:           \"%s\"\n\n", 
+
+    printf("\nlabor.conf's path:      \"%s\"\nrunning mode:           \"%s\"\n\n",
         labor::Options::ConfigFile().c_str(), _labor_running_mode());
     return true;
 }
@@ -54,14 +54,14 @@ _labor_sayhello()    {
 // Labor startup!
 //-----------------------------------
 int main(int argc, char * argv[])
-{    
+{
     labor::Options::parse(argc, argv);
 
     // is the running options use '-v/--version' or  '-h/--help'
     if (labor::Options::checkAndShowHelp())
         return 0;
     if (labor::Options::checkAndShowVersion())
-        return 0;    
+        return 0;
 
     // Prepare
     _labor_sayhello();
@@ -70,7 +70,7 @@ int main(int argc, char * argv[])
     {
         printf("labor prepare is fail....\n");
         return -1;
-    }    
+    }
     
     // start the event loop
     labor::Event ev;

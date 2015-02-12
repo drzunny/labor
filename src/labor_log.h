@@ -5,8 +5,12 @@
 #include <string>
 
 
-#define LOG_DEBUG \
+#ifdef LABOR_DEBUG
+# define LOG_DEBUG \
     (labor::Logger(labor::Logger::LV_DEBUG, __FILE__, __LINE__).write)
+#else
+# define LOG_DEBUG
+#endif
 
 #define LOG_INFO \
     (labor::Logger(labor::Logger::LV_INFO, __FILE__, __LINE__).write)
@@ -35,7 +39,7 @@ namespace labor
         };
 
     public:
-        static bool isMerge() { return merge_; }
+        static bool enableStdout() { return enableStdout_; }
         static std::string & filePath() { return filepath_; }
         static std::string & format() { return format_; }
 
@@ -46,7 +50,7 @@ namespace labor
         static std::string filepath_;
         static std::string format_;
         static int maxsize_;
-        static bool merge_;
+        static bool enableStdout_;
 
         const char * source_;
         int line_;

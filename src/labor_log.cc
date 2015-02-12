@@ -76,12 +76,25 @@ _logger_file_exists(const char * filepath)  {
     return true;
 }
 
+
 static inline FILE *
 _logger_file_reopen(FILE * old, const char * filepath)  {
     fclose(old);
     return fopen(filepath, "a");
 }
 
+
+static inline const char *
+_logger_strip_source_filename(const char * source)  {
+    // strip the base file name, ex: /../../a.cc ==> a.cc
+    int len = strlen(source);
+    int pos = len - 1;
+    const char * c = source + pos;
+    while (c >= source && (*c != '\\' && *c != '/')) { c--; }
+    // c = source - 1 now
+    c += 1;
+    return c;
+}
 
 /* ------------------------------------
 * logger operation implements
@@ -112,29 +125,29 @@ _logger_queue_write(const _logger_struct * log)  {
         text = labor::Logger::format();
 
     labor::string_replace(text, __S("$level"), _logger_level_string(level));
-    labor::string_replace(text, __S("$file"), log->filepath);
+    labor::string_replace(text, __S("$file"), _logger_strip_source_filename(log->filepath));
     labor::string_replace(text, __S("$line"), std::to_string(log->line));
     labor::string_replace(text, __S("$datetime"), labor::time_now_string());
     labor::string_replace(text, __S("$text"), log->text);
-    
-    if (!labor::Logger::isMerge())
-        printf("%s\n", log->text);
-    
+
+    if (labor::Logger::enableStdout())
+        printf("%s\n", text.c_str());
+
     // Write to file
     // if log file has been changed, close the old FILE and reopen the new one.
     if (s_logfile_path.compare(log->logpath) != 0)  {
         if (s_logfile_handle != NULL)
-            fclose(s_logfile_handle);        
-        s_logfile_path = log->logpath;        
-        if (!_logger_file_exists(log->logpath)) 
+            fclose(s_logfile_handle);
+        s_logfile_path = log->logpath;
+        if (!_logger_file_exists(log->logpath))
             s_logfile_handle = fopen(log->logpath, "w");
         else
             s_logfile_handle = fopen(log->logpath, "a");
 
         LABOR_ASSERT(s_logfile_handle != NULL, "cannot open logfile");
     }
-    fprintf(s_logfile_handle, text.c_str());
-    fflush(s_logfile_handle);    
+    fprintf(s_logfile_handle, "%s\n", text.c_str());
+    fflush(s_logfile_handle);
 }
 
 
@@ -197,7 +210,7 @@ _logger_queue_handler(void * args) {
             continue;
         }
         // FIXIT: queue is not thread-safe container, if queue is writting when you read it...
-        auto log = _logger_queue.front();        
+        auto log = _logger_queue.front();
         _logger_queue_write(&log);
         _logger_queue.pop_front();
         // resize the queue
@@ -229,7 +242,7 @@ _logger_queue_push(int level, const string & filename, int line, const string & 
     memcpy(ls.text, content.c_str(), content.length() + 1);
     ls.line = line;
     ls.level = level;
-    
+
     _logger_queue.push_back(ls);
 
     // if push success, resume the log thread immediately.
@@ -242,9 +255,9 @@ _logger_queue_push(int level, const string & filename, int line, const string & 
 * ------------------------------------
 */
 string labor::Logger::filepath_ = _load_config("log.file_path", "./");
-string labor::Logger::format_ = _load_config("log.format", "$level>> $file | $line | $datetime | $text");
+string labor::Logger::format_ = _load_config("log.format", "$level>>$file|$line|$datetime| $text");
 int labor::Logger::maxsize_ = _string2int(_load_config("log.file_size", "10"));
-bool labor::Logger::merge_ = _string2bool(_load_config("log.merge", "1"));
+bool labor::Logger::enableStdout_ = _string2bool(_load_config("log.enable_stdout", "1"));
 
 
 labor::Logger::Logger(labor::Logger::LoggerLevel level, const char * filename, int line)
