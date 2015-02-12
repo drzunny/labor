@@ -117,7 +117,8 @@ _logger_queue_write(const _logger_struct * log)  {
     labor::string_replace(text, __S("$datetime"), labor::time_now_string());
     labor::string_replace(text, __S("$text"), log->text);
     
-    printf("%s\n", log->text);
+    if (!labor::Logger::isMerge())
+        printf("%s\n", log->text);
     
     // Write to file
     // if log file has been changed, close the old FILE and reopen the new one.
