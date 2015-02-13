@@ -18,6 +18,12 @@
 #   include <stdlib.h>
 #endif
 
+#ifdef LABOR_DEBUG
+# define __DBG_SAY(x) if (labor::Logger::enableStdout()) {printf(x);}
+#else
+# define __DBG_SAY(x)
+#endif
+
 using namespace std;
 
 /*
@@ -40,7 +46,7 @@ _string2int(const string && s)   {
 
 static bool
 _string2bool(const string && s) {
-    return false;
+    return true;
 }
 
 
@@ -101,21 +107,36 @@ _logger_strip_source_filename(const char * source)  {
 * ------------------------------------
 */
 
-struct _logger_struct {
+struct _log_body_t {
     char text[LABOR_LOG_BUFFER];
     char logpath[256];
-    char filepath[256];
+    char filepath[32];
     int line;
     int level;
 };
 
+// Self impl queue
+struct _log_queue_t {
+    _log_body_t body;
+    _log_queue_t * next;
+
+    void push() {}
+    _log_body_t pop() {}
+};
+
 static bool _logger_isstartup = false;
 static pthread_t _logger_thread;
-static deque<_logger_struct> _logger_queue;
-static atomic<bool> _logger_lock = ATOMIC_VAR_INIT(false);  // use spinlock to wait
+static deque<_log_body_t> _logger_queue;
 
+// the spin-locks
+static atomic<bool> _logger_lock_wait = ATOMIC_VAR_INIT(false);
+
+
+/*
+*  write log to stdout and file
+*/
 static void
-_logger_queue_write(const _logger_struct * log)  {
+_logger_queue_write(const _log_body_t * log)  {
     static string s_logfile_path = "";
     static FILE * s_logfile_handle = NULL;
 
@@ -125,7 +146,7 @@ _logger_queue_write(const _logger_struct * log)  {
         text = labor::Logger::format();
 
     labor::string_replace(text, __S("$level"), _logger_level_string(level));
-    labor::string_replace(text, __S("$file"), _logger_strip_source_filename(log->filepath));
+    labor::string_replace(text, __S("$file"), log->filepath);
     labor::string_replace(text, __S("$line"), std::to_string(log->line));
     labor::string_replace(text, __S("$datetime"), labor::time_now_string());
     labor::string_replace(text, __S("$text"), log->text);
@@ -136,8 +157,10 @@ _logger_queue_write(const _logger_struct * log)  {
     // Write to file
     // if log file has been changed, close the old FILE and reopen the new one.
     if (s_logfile_path.compare(log->logpath) != 0)  {
-        if (s_logfile_handle != NULL)
+        if (s_logfile_handle != NULL)   {
             fclose(s_logfile_handle);
+        }
+
         s_logfile_path = log->logpath;
         if (!_logger_file_exists(log->logpath))
             s_logfile_handle = fopen(log->logpath, "w");
@@ -151,32 +174,42 @@ _logger_queue_write(const _logger_struct * log)  {
 }
 
 
+/*
+*  the log file name with date string
+*/
 static string
 _logger_queue_datefile() {
     string s = labor::Logger::filePath();
-    s.append("labor.log");
     char datestr[100] = { 0 };
     time_t now = time(NULL);
     strftime(datestr, 10, ".%Y%m%d", localtime(&now));
+
+    s.append("labor.log");
     return s.append(datestr);
 }
 
 
+/*
+*  resume the logger-thread
+*/
 static void
 _logger_queue_resume() {
-    bool isLock = false;
-    bool check = std::atomic_exchange(&_logger_lock, isLock);
+    const bool isLock = false;
+    bool check = std::atomic_exchange(&_logger_lock_wait, isLock);
     if (check)
         printf("[WARNNING]  Atomic fail to release the lock!");
 }
 
 
+/*
+*  a spinlock and timer for waiting the log arrived
+*/
 static void
 _logger_queue_wait(size_t secs)   {
     static uint64_t ts = labor::timestamp_now();
 
     // To avoid the idle-loop to waste the CPU. use sleep(0)
-    while (std::atomic_load(&_logger_lock) == true)
+    while (std::atomic_load(&_logger_lock_wait) == true)
     {
 #if WIN32
         Sleep(0);
@@ -194,12 +227,19 @@ _logger_queue_wait(size_t secs)   {
     }
 }
 
+
+/*
+*  check the logger-queue is empty or not
+*/
 static inline bool
 _logger_queue_has() {
     return _logger_queue.size() > 0;
 }
 
 
+/*
+*  the thread-handler
+*/
 static void *
 _logger_queue_handler(void * args) {
     while (true)
@@ -220,6 +260,9 @@ _logger_queue_handler(void * args) {
 }
 
 
+/*
+*  start a logger-thread
+*/
 static void
 _logger_queue_start()   {
     if (_logger_isstartup)
@@ -233,12 +276,16 @@ _logger_queue_start()   {
 }
 
 
+/*
+*  push a log into the logger-queue
+*/
 static void
 _logger_queue_push(int level, const string & filename, int line, const string & content)    {
-    _logger_struct ls;
+    _log_body_t ls;
     auto trueFile = _logger_queue_datefile();
+    const char * filepath = _logger_strip_source_filename(filename.c_str());
     memcpy(ls.logpath, trueFile.c_str(), trueFile.length() + 1);
-    memcpy(ls.filepath, filename.c_str(), filename.length() + 1);
+    memcpy(ls.filepath, filepath, strlen(filepath) + 1);
     memcpy(ls.text, content.c_str(), content.length() + 1);
     ls.line = line;
     ls.level = level;
