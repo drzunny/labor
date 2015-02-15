@@ -12,6 +12,13 @@
 #include <rapidjson/document.h>
 #include <rapidjson/stringbuffer.h>
 
+#ifdef WIN32
+#   include <Windows.h>
+#else
+#   include <unistd.h>
+#   include <stdlib.h>
+#endif
+
 using namespace std;
 using namespace boost::property_tree;
 
@@ -165,6 +172,15 @@ labor::time_utc_now_string()   {
     return "";
 }
 
+
+void
+labor::time_sleep(int msecs)    {
+#if WIN32
+    Sleep(msecs);
+#else
+    usleep(msecs * 1000);
+#endif
+}
 
 // For Json
 // ---------------------------------------

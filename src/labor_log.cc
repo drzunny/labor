@@ -12,11 +12,7 @@
 #include <atomic>
 #include <boost/algorithm/string.hpp>
 
-#ifdef WIN32
-#   include <Windows.h>
-#else
-#   include <stdlib.h>
-#endif
+
 
 #ifdef LABOR_DEBUG
 # define __DBG_SAY(x) if (labor::Logger::enableStdout()) {printf(x);}
@@ -189,7 +185,7 @@ _logger_queue_resume() {
     const bool isLock = false;
     bool check = std::atomic_exchange(&_logger_lock_wait, isLock);
     if (check)
-        printf("[WARNNING]  Atomic fail to release the lock!");
+        printf("[INFO]  the queue was been unlocked\n");
 }
 
 
@@ -203,11 +199,7 @@ _logger_queue_wait(size_t secs)   {
     // To avoid the idle-loop to waste the CPU. use sleep(0)
     while (std::atomic_load(&_logger_lock_wait) == true)
     {
-#if WIN32
-        Sleep(0);
-#else
-        sleep(0);
-#endif
+        labor::time_sleep(0);
         uint64_t now = labor::timestamp_now();
         // if timeout, unlock
         if (now - ts >= secs * 1000)
@@ -301,9 +293,22 @@ int labor::Logger::maxsize_ = _string2int(_load_config("log.file_size", "10"));
 bool labor::Logger::enableStdout_ = _string2bool(_load_config("log.enable_stdout", "1"));
 
 
+bool
+labor::Logger::ready()  {
+    _logger_queue_start();
+    return true;
+}
+
+
+void
+labor::Logger::release()    {
+    _logger_queue.clear();
+    _logger_queue.shrink_to_fit();
+}
+
+
 labor::Logger::Logger(labor::Logger::LoggerLevel level, const char * filename, int line)
     : level_(level), source_(filename), line_(line) {
-    _logger_queue_start();
 }
 
 

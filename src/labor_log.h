@@ -42,6 +42,8 @@ namespace labor
         static bool enableStdout() { return enableStdout_; }
         static std::string & filePath() { return filepath_; }
         static std::string & format() { return format_; }
+        static bool ready();
+        static void release();
 
         Logger(LoggerLevel level, const char * filename, int line);
         void write(const char * content, ...);

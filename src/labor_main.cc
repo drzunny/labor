@@ -11,12 +11,19 @@
 
 static const char * s_running_mode[] = { "DEBUG", "NORMAL", "OPTIMIZED" };
 
+/*
+    Display running mode
+*/
 static const char *
 _labor_running_mode()   {
     auto mode = labor::Options::runningMode();
     return s_running_mode[(int)mode];
 }
 
+
+/*
+    Prepare the service
+*/
 static bool
 _labor_prepare(int argc, char * argv[])    {
     bool ok = true;
@@ -26,12 +33,17 @@ _labor_prepare(int argc, char * argv[])    {
     if (labor::Options::enableLua())    {
         LABOR_OPERATION_START(labor::LVM::init())
     }
+    LABOR_OPERATION_START(labor::Logger::ready())
 
     printf("\nlabor.conf's path:      \"%s\"\nrunning mode:           \"%s\"\n\n",
         labor::Options::ConfigFile().c_str(), _labor_running_mode());
     return true;
 }
 
+
+/*
+    Release the modules
+*/
 static void
 _labor_release() {
     if (labor::Options::enablePython()){
@@ -40,8 +52,13 @@ _labor_release() {
     if (labor::Options::enableLua())    {
         labor::LVM::dispose();
     }
+    labor::Logger::release();
 }
 
+
+/*
+    Startup and say hello
+*/
 static void
 _labor_sayhello()    {
     printf("\n\
@@ -70,8 +87,8 @@ int main(int argc, char * argv[])
     {
         printf("labor prepare is fail....\n");
         return -1;
-    }
-    
+    }    
+
     // start the event loop
     labor::Event ev;
     ev.run();

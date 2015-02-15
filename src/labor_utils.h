@@ -35,6 +35,7 @@ namespace labor
     uint64_t timestamp_now_m();
     std::string time_now_string();
     std::string time_utc_now_string();
+    void time_sleep(int msecs);
 
 
     // for Json
