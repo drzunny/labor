@@ -115,21 +115,13 @@ struct _log_body_t {
     int level;
 };
 
-// Self impl queue
-struct _log_queue_t {
-    _log_body_t body;
-    _log_queue_t * next;
-
-    void push() {}
-    _log_body_t pop() {}
-};
 
 static bool _logger_isstartup = false;
 static pthread_t _logger_thread;
 static deque<_log_body_t> _logger_queue;
 
 // the spin-locks
-static atomic<bool> _logger_lock_wait = ATOMIC_VAR_INIT(false);
+static atomic<bool> _logger_lock_wait = ATOMIC_VAR_INIT(true);
 
 
 /*
@@ -246,6 +238,8 @@ _logger_queue_handler(void * args) {
     {
         if (!_logger_queue_has())
         {
+            // set lock
+            std::atomic_exchange(&_logger_lock_wait, true);
             _logger_queue_wait(30);
             continue;
         }

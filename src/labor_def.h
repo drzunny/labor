@@ -4,6 +4,10 @@
 // Labor's VERSION String
 #define LABOR_VERSION "0.0.1"
 
+// Namespace
+#define NAMESPACE(what) namespace what {
+#define NAMESPACE_END   }
+
 // Some Macro Helpers
 #define __S(x) std::string(x)
 #define LABOR_ASSERT(x, msg) assert((x) && (msg))
