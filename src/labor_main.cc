@@ -5,7 +5,7 @@
 // Ready
 //-----------------------------------
 #define LABOR_OPERATION_START(op) \
-    printf("startup operation<%s>........\t\t", #op);\
+    printf("startup operation<%s>....\t\t", #op);\
     if ((op)) printf("[ OK ]\n");\
         else  { printf("[FAIL]\n"); ok = false;}
 
@@ -33,7 +33,7 @@ _labor_prepare(int argc, char * argv[])    {
     if (labor::Options::enableLua())    {
         LABOR_OPERATION_START(labor::LVM::init())
     }
-    LABOR_OPERATION_START(labor::Logger::ready())
+    LABOR_OPERATION_START(labor::Logger::init())
 
     printf("\nlabor.conf's path:      \"%s\"\nrunning mode:           \"%s\"\n\n",
         labor::Options::ConfigFile().c_str(), _labor_running_mode());
@@ -52,7 +52,7 @@ _labor_release() {
     if (labor::Options::enableLua())    {
         labor::LVM::dispose();
     }
-    labor::Logger::release();
+    labor::Logger::dispose();
 }
 
 
@@ -88,6 +88,8 @@ int main(int argc, char * argv[])
         printf("labor prepare is fail....\n");
         return -1;
     }    
+
+    for (int i = 0; i < 10000; i++) { LOG_DEBUG("Hello world"); }
 
     // start the event loop
     labor::Event ev;

@@ -36,7 +36,9 @@ so, i just use POSIX Thread to implement it by myself.
 */
 static int
 _string2int(const string && s)   {
-    return 0;
+    if (s.empty())
+        return 0;
+    return std::atoi(s.c_str());
 }
 
 
@@ -98,9 +100,9 @@ _logger_strip_source_filename(const char * source)  {
     return c;
 }
 
-/* ------------------------------------
-* logger operation implements
-* ------------------------------------
+/* -------------------------------------------------------------------
+*   logger operation implements
+*  -------------------------------------------------------------------
 */
 
 struct _log_body_t {
@@ -294,14 +296,14 @@ bool labor::Logger::enableStdout_ = _string2bool(_load_config("log.enable_stdout
 
 
 bool
-labor::Logger::ready()  {
+labor::Logger::init()  {
     _logger_queue_start();
     return true;
 }
 
 
 void
-labor::Logger::release()    {
+labor::Logger::dispose()    {
     _logger_queue.clear();
     _logger_queue.shrink_to_fit();
 }
