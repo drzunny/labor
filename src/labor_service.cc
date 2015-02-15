@@ -7,7 +7,10 @@ using namespace std;
 * The Helper Functions
 * ------------------------------------
 */
-
+static inline bool
+_service_check_exists(const char * filepath)    {
+    return false;
+}
 
 /* ------------------------------------
 * The PIMPL Implementations
@@ -34,6 +37,8 @@ labor::Service::addHandler(const string & name, const string & script)    {
 
 int
 labor::Service::handleRequest(const labor::Request * req, string & error) {
+    if (!_service_check_exists(""))
+        return 404;
     return 200;
 }
 
