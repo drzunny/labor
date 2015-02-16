@@ -61,8 +61,9 @@ namespace labor
         void push(const std::string & name, T & val);
 
 
-        JsonDoc get(const std::string & name);
-        JsonDoc getIndex(int i);
+        JsonDoc get(const std::string & name) const;
+        JsonDoc getIndex(int i) const;
+        size_t count() const;
 
         // Get values
         int toInt() const;

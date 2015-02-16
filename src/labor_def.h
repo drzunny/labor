@@ -19,4 +19,7 @@
 #   error "log buffer cannot lower-equal than 0"
 #endif
 
+// Hashtable
+#define Hashtable std::unordered_map
+
 #endif

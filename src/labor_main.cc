@@ -89,7 +89,7 @@ int main(int argc, char * argv[])
         return -1;
     }    
 
-    for (int i = 0; i < 10000; i++) { LOG_DEBUG("Hello world"); }
+    //for (int i = 0; i < 10000; i++) { LOG_DEBUG("Hello world"); }
 
     // start the event loop
     labor::Event ev;

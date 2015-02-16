@@ -201,6 +201,36 @@ _check_json_object(const rapidjson::Document & d, const char * key = "") {
     return d;
 }
 
+static void
+_get_json_object(rapidjson::Document & d, rapidjson::Value & v)  {
+    if (v.IsInt())
+        d.SetInt(v.GetInt());
+    if (v.IsInt64())
+        d.SetInt64(v.GetInt64());
+    if (v.IsString())
+        d.SetString(rapidjson::StringRef(v.GetString()));
+    if (v.IsDouble())
+        d.SetDouble(v.GetDouble());
+    if (v.IsBool())
+        d.SetBool(v.GetBool());
+    if (v.IsArray() || v.IsObject())    {
+        if (v.IsArray())
+        {
+            d.SetArray();
+            for (auto iter = v.Begin(); iter != v.End(); iter++)
+                d.PushBack(*iter, d.GetAllocator());
+        }
+        else
+        {
+            d.SetObject();
+            for (auto iter = v.MemberBegin(); iter != v.MemberEnd(); iter++)
+            {
+                d.AddMember(iter->name, iter->value, d.GetAllocator());
+            }
+        }
+    }
+}
+
 class labor::_jsondoc_impl
 {
 public:
@@ -219,12 +249,55 @@ public:
     void set(const string & name, bool b) { _set_json_object(d_, name.c_str(), b); }
     void set(const string & name, rapidjson::Document & d) { _set_json_object(d_, name.c_str(), d); }
 
-    void push(const string & name, string & v)    {}
-    void push(const string & name, int v)    {}
-    void push(const string & name, int64_t v)    {}
-    void push(const string & name, double v)    {}
-    void push(const string & name, bool v)    {}
-    void push(const string & name, rapidjson::Document & v)    {}
+    void push(const string & name, string & v)    {
+        if (name.empty())
+            d_.PushBack(rapidjson::StringRef(v.c_str()), d_.GetAllocator());
+        else
+            d_[rapidjson::Value(rapidjson::StringRef(name.c_str()))].PushBack(rapidjson::StringRef(v.c_str()), d_.GetAllocator());
+    }
+    void push(const string & name, int v)    {
+        if (name.empty())
+            d_.PushBack(v, d_.GetAllocator());
+        else
+            d_[rapidjson::Value(rapidjson::StringRef(name.c_str()))].PushBack(v, d_.GetAllocator());
+    }
+    void push(const string & name, int64_t v)    {
+        if (name.empty())
+            d_.PushBack(v, d_.GetAllocator());
+        else
+            d_[rapidjson::Value(rapidjson::StringRef(name.c_str()))].PushBack(v, d_.GetAllocator());
+    }
+    void push(const string & name, double v)    {
+        if (name.empty())
+            d_.PushBack(v, d_.GetAllocator());
+        else
+            d_[rapidjson::Value(rapidjson::StringRef(name.c_str()))].PushBack(v, d_.GetAllocator());
+    }
+    void push(const string & name, bool v)    {
+        if (name.empty())
+            d_.PushBack(v, d_.GetAllocator());
+        else
+            d_[rapidjson::Value(rapidjson::StringRef(name.c_str()))].PushBack(v, d_.GetAllocator());
+    }
+    void push(const string & name, rapidjson::Document & v)    {
+        if (name.empty())
+            d_.PushBack(v, d_.GetAllocator());
+        else
+            d_[rapidjson::Value(rapidjson::StringRef(name.c_str()))].PushBack(v, d_.GetAllocator());
+    }
+
+    rapidjson::Value & get(const string & name) {
+        rapidjson::Value key(rapidjson::StringRef(name.c_str()));
+        return d_[key];
+    }
+
+    rapidjson::Value & getIndex(int i)    {
+        return d_[i];
+    }
+
+    size_t count() const {
+        return d_.MemberCount();
+    }
 
     int toInt() const { return d_.GetInt(); }
     int64_t toInt64() const { return d_.GetInt64(); }
@@ -270,14 +343,28 @@ double labor::JsonDoc::toDouble() const { return doc_->toDouble(); }
 bool labor::JsonDoc::toBool() const { return doc_->toBool(); }
 
 labor::JsonDoc
-labor::JsonDoc::get(const string & name)    {
-    return labor::JsonDoc();
+labor::JsonDoc::get(const string & name) const    {
+    auto r = labor::JsonDoc();
+    rapidjson::Value & v = doc_->get(name);    
+    _get_json_object(r.doc_->raw(), v);
+
+    return r;
 }
 
 
 labor::JsonDoc
-labor::JsonDoc::getIndex(int i)   {
-    return labor::JsonDoc();
+labor::JsonDoc::getIndex(int i) const   {
+    auto r = labor::JsonDoc();
+    rapidjson::Value & v = doc_->getIndex(i);
+    _get_json_object(r.doc_->raw(), v);
+
+    return r;
+}
+
+
+size_t
+labor::JsonDoc::count() const {
+    return doc_->count();
 }
 
 // Check Values

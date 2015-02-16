@@ -106,9 +106,9 @@ _logger_strip_source_filename(const char * source)  {
 */
 
 struct _log_body_t {
-    char text[LABOR_LOG_BUFFER];
-    char logpath[256];
-    char filepath[32];
+    string text;
+    string logpath;
+    string filepath;
     int line;
     int level;
 };
@@ -152,10 +152,10 @@ _logger_queue_write(const _log_body_t * log)  {
         }
 
         s_logfile_path = log->logpath;
-        if (!_logger_file_exists(log->logpath))
-            s_logfile_handle = fopen(log->logpath, "w");
+        if (!_logger_file_exists(log->logpath.c_str()))
+            s_logfile_handle = fopen(log->logpath.c_str(), "w");
         else
-            s_logfile_handle = fopen(log->logpath, "a");
+            s_logfile_handle = fopen(log->logpath.c_str(), "a");
 
         LABOR_ASSERT(s_logfile_handle != NULL, "cannot open logfile");
     }
@@ -187,7 +187,7 @@ _logger_queue_resume() {
     const bool isLock = false;
     bool check = std::atomic_exchange(&_logger_lock_wait, isLock);
     if (check)
-        printf("[INFO]  the queue was been unlocked\n");
+        printf("\n[INFO]  the queue was been unlocked\n");
 }
 
 
@@ -272,9 +272,9 @@ _logger_queue_push(int level, const string & filename, int line, const string & 
     _log_body_t ls;
     auto trueFile = _logger_queue_datefile();
     const char * filepath = _logger_strip_source_filename(filename.c_str());
-    memcpy(ls.logpath, trueFile.c_str(), trueFile.length() + 1);
-    memcpy(ls.filepath, filepath, strlen(filepath) + 1);
-    memcpy(ls.text, content.c_str(), content.length() + 1);
+    ls.logpath = trueFile;
+    ls.filepath = filepath;
+    ls.text = content;
     ls.line = line;
     ls.level = level;
 
