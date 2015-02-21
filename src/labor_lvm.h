@@ -10,11 +10,17 @@ namespace labor
     class LVM
     {
     public:
-        static void setupEnv(const std::vector<std::string> & paths);
+        enum LVMType
+        {
+            PUBSUB = 0,
+            //REQREP = 1
+        };
+
+    public:
         static bool init();
         static void dispose();
 
-        void execute() const;
+        static int execute(const std::string & module, const std::string & args, LVMType type);
 
     private:
         static std::shared_ptr<LVM> s_pvm_;

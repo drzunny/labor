@@ -7,13 +7,13 @@
 #define LABOR_OPERATION_START(op) \
     printf("startup operation<%s>....\t\t", #op);\
     if ((op)) printf("[ OK ]\n");\
-        else  { printf("[FAIL]\n"); ok = false;}
+    else  { printf("[FAIL]\n"); ok = false;}
 
 static const char * s_running_mode[] = { "DEBUG", "NORMAL", "OPTIMIZED" };
 
 /*
     Display running mode
-*/
+    */
 static const char *
 _labor_running_mode()   {
     auto mode = labor::Options::runningMode();
@@ -23,19 +23,22 @@ _labor_running_mode()   {
 
 /*
     Prepare the service
-*/
+    */
 static bool
 _labor_prepare(int argc, char * argv[])    {
     bool ok = true;
+    
+    // The logger::init must be the first. because `cwd` will be change after init python
+    LABOR_OPERATION_START(labor::Logger::init());
+    
     if (labor::Options::enablePython()){
-        LABOR_OPERATION_START(labor::PVM::init())
+        LABOR_OPERATION_START(labor::PVM::init());
     }
     if (labor::Options::enableLua())    {
-        LABOR_OPERATION_START(labor::LVM::init())
-    }
-    LABOR_OPERATION_START(labor::Logger::init())
+        LABOR_OPERATION_START(labor::LVM::init());
+    }    
 
-    printf("\nlabor.conf's path:      \"%s\"\nrunning mode:           \"%s\"\n\n",
+        printf("\nlabor.conf's path:      \"%s\"\nrunning mode:           \"%s\"\n\n",
         labor::Options::ConfigFile().c_str(), _labor_running_mode());
     return true;
 }
@@ -43,7 +46,7 @@ _labor_prepare(int argc, char * argv[])    {
 
 /*
     Release the modules
-*/
+    */
 static void
 _labor_release() {
     if (labor::Options::enablePython()){
@@ -58,7 +61,7 @@ _labor_release() {
 
 /*
     Startup and say hello
-*/
+    */
 static void
 _labor_sayhello()    {
     printf("\n\
@@ -87,9 +90,9 @@ int main(int argc, char * argv[])
     {
         printf("labor prepare is fail....\n");
         return -1;
-    }    
+    }
 
-    //for (int i = 0; i < 10000; i++) { LOG_DEBUG("Hello world"); }
+    //for (int i = 0; i < 10000; i++) { LOG_INFO("Hello"); }
 
     // start the event loop
     labor::Event ev;

@@ -182,6 +182,21 @@ labor::time_sleep(int msecs)    {
 #endif
 }
 
+
+// For path
+// ---------------------------------------
+string 
+labor::path_getfull(const std::string & relpath)    {    
+    char buff[256];
+#if WIN32
+    GetFullPathNameA(relpath.c_str(), 256, buff, NULL);
+#else
+    realpath(relpath.c_str(), buff);
+#endif
+    return string(buff);
+}
+
+
 // For Json
 // ---------------------------------------
 template<typename T>

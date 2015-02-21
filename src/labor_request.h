@@ -18,8 +18,10 @@ namespace labor
 
         static bool isValid(const std::string & msg);
 
-        std::string actionName();
-        std::string lastError();
+        int serviceType() const;
+        std::string actionName() const;
+        std::string args() const;
+        std::string lastError() const;
         int send();
 
     private:

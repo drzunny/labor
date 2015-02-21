@@ -1,5 +1,7 @@
 #include "labor_service.h"
 #include "labor_request.h"
+#include "labor_pvm.h"
+#include "labor_lvm.h"
 
 using namespace std;
 
@@ -7,10 +9,22 @@ using namespace std;
 * The Helper Functions
 * ------------------------------------
 */
-static inline bool
-_service_check_exists(const char * filepath)    {
-    return false;
+static inline int
+_service_call_method(const char * method, const char * args, int type)    {
+    // Check method is python or lua
+    int methodType = 0;
+
+    if (methodType == 0)
+    {
+        return labor::PVM::execute(method, args, (labor::PVM::PVMType)type);
+    }
+    else
+    {
+        return labor::LVM::execute(method, args, (labor::LVM::LVMType)type);
+    }
+    return -1;
 }
+
 
 /* ------------------------------------
 * The PIMPL Implementations
@@ -37,9 +51,8 @@ labor::Service::addHandler(const string & name, const string & script)    {
 
 int
 labor::Service::handleRequest(const labor::Request * req, string & error) {
-    if (!_service_check_exists(""))
-        return 404;
-    return 200;
+    int ret = _service_call_method(req->actionName().c_str(), req->args().c_str(), req->serviceType());
+    return ret;
 }
 
 

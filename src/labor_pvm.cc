@@ -15,7 +15,6 @@ using namespace std;
 
 struct _pvm_module_t
 {
-    int argc;
     PyObject * module;
     PyObject * method;
 };
@@ -24,6 +23,8 @@ struct _pvm_module_t
 static const char * _pvm_script_change_cwd = "import os, sys\n__pvm_cwd = os.path.abspath('$file')\nsys.path[0] = __pvm_cwd\nos.chdir(__pvm_cwd)";
 static string _pvm_service_root = labor::readConfig("services.service_path", "./services");
 static Hashtable<string, _pvm_module_t> s_pvm_module = Hashtable<string, _pvm_module_t>();
+static PyObject * s_pvm_json = NULL;
+static PyObject * s_pvm_jsonload = NULL;
 
 
 /* ------------------------------------
@@ -44,22 +45,63 @@ _pvm_helper_chdir() {
 }
 
 
+static PyObject *
+_pvm_build_args(const char * module, const char * args, const char * header, const char * ver)  {
+    PyObject * vars = PyDict_New();
+    PyObject * vModule = Py_BuildValue("u", module);
+    PyObject * tArgs = Py_BuildValue("u", args);
+    PyObject * tHeader = header != NULL ? Py_BuildValue("u", header) : NULL;
+    PyObject * vVersion = ver != NULL ? Py_BuildValue("u", ver) : NULL;
+    PyObject * vArgs = NULL, *vHeader = NULL;
+
+    // Convert the `args` and `headers` to Dict object
+    // find ujson - simplejson - json module.
+    if (s_pvm_json == NULL) {
+        s_pvm_json = PyImport_ImportModule("ujson");
+        if (s_pvm_json != NULL)
+            goto SETUP_ARGS;
+        s_pvm_json = PyImport_ImportModule("simplejson");
+        if (s_pvm_json != NULL)
+            goto SETUP_ARGS;
+        s_pvm_json = PyImport_ImportModule("json");
+        s_pvm_jsonload = PyObject_GetAttrString(s_pvm_json, "loads");
+    }
+
+    // parse json to a dict, check args is empty or not
+    if (strcmp(args, "") != 0)
+        vArgs = PyObject_CallFunction(s_pvm_jsonload, "s", args);
+    if (header != NULL)
+        vHeader = PyObject_CallFunction(s_pvm_jsonload, "s", header);
+
+
+SETUP_ARGS:
+    // Set to Dict
+    PyDict_SetItemString(vars, "module", vModule);
+    PyDict_SetItemString(vars, "args", vArgs);
+    if (header != NULL) PyDict_SetItemString(vars, "header", vHeader);
+    if (ver != NULL) PyDict_SetItemString(vars, "version", vVersion);
+
+    // Decr the ref of value
+    Py_DECREF(tArgs);
+    Py_DECREF(vModule);
+    if (vArgs != NULL) { Py_DECREF(vArgs); }
+    if (vHeader != NULL) { Py_DECREF(tHeader); Py_DECREF(vHeader); }
+    if (vVersion != NULL) { Py_DECREF(vVersion); }
+
+    return vars;
+}
+
+
 static int
-_pvm_service_exec(const string & module, const labor::JsonDoc & args, string & msg)    {
+_pvm_service_exec(const string & module, const string & args, string & msg)    {
     if (s_pvm_module.find(module) == s_pvm_module.end())
     {
         msg = "not found";
         return 404;
     }
     auto & m = s_pvm_module[module];
-    // method format
-    PyObject * vars = PyList_New(args.count());
-    for (size_t i = 0; i < args.count(); i++)
-    {
-        auto a = Py_BuildValue("u", args.getIndex(i).toString().c_str());
-        PyList_Append(vars, a);
-        Py_DECREF(a);
-    }
+    // method format, next version header and ver will not be not ~
+    PyObject * vars = _pvm_build_args(module.c_str(), args.c_str(), NULL, NULL);
 
     PyObject_Call(m.method, vars, NULL);
     Py_DECREF(vars);
@@ -126,7 +168,7 @@ labor::PVM::loadModule(const string & module, labor::PVM::PVMType type)  {
         LOG_INFO("Load module %s fail", module.c_str());
         return;
     }
-    if (type == labor::PVM::PVMType::PUBSUB)    
+    if (type == labor::PVM::PVMType::PUBSUB)
     {
         method = PyObject_GetAttrString(pymodule, "subscript");
     }
@@ -136,9 +178,8 @@ labor::PVM::loadModule(const string & module, labor::PVM::PVMType type)  {
     if (!method)    {
         LOG_INFO("handler not found");
         return;
-    }    
+    }
     _pvm_module_t m;
-    m.argc = 0;
     m.module = pymodule;
     m.method = method;
     s_pvm_module[module] = m;
@@ -146,9 +187,9 @@ labor::PVM::loadModule(const string & module, labor::PVM::PVMType type)  {
 
 
 int
-labor::PVM::execute(const string & module, const labor::JsonDoc & args, labor::PVM::PVMType type)    {
+labor::PVM::execute(const string & module, const string & args, labor::PVM::PVMType type)    {
     string msg;
-    int code = _pvm_service_exec(module.c_str(), args, msg);
+    int code = _pvm_service_exec(module, args, msg);
     if (code != 0)    {
         LOG_ERROR("Call Python Module - %s - fail(%d) : %s", module.c_str(), code, msg.c_str());
     }

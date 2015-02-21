@@ -24,7 +24,7 @@ labor::LVM::dispose()   {
     LOG_INFO("Lua VM was not initialized....");
 }
 
-void
-labor::LVM::setupEnv(const vector<string> & paths)  {
-
+int
+labor::LVM::execute(const string & module, const string & args, labor::LVM::LVMType type)   {
+    return 200;
 }

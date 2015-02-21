@@ -25,6 +25,14 @@ public:
         return doc_.get("action").toString();
     }
 
+    string args() {
+        return doc_.get("args").toString();
+    }
+
+    int serviceType()   {
+        return doc_.get("serviceType").toInt();
+    }
+
 private:
     labor::JsonDoc doc_;
 };
@@ -57,15 +65,26 @@ labor::Request::isValid(const string & msg)   {
     return false;
 }
 
+string
+labor::Request::args() const    {
+    return request_->args();
+}
+
+
+int
+labor::Request::serviceType() const {
+    return request_->serviceType();
+}
+
 
 string
-labor::Request::actionName() {
+labor::Request::actionName() const {
     return request_->actionName();
 }
 
 
 string
-labor::Request::lastError() {
+labor::Request::lastError() const {
     return lastError_;
 }
 

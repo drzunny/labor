@@ -31,6 +31,75 @@ so, i just use POSIX Thread to implement it by myself.
 
 
 /* ------------------------------------
+* The CAS(?) Queue
+* ------------------------------------
+*/
+struct _log_body_t;
+struct cas_queue
+{
+    shared_ptr<_log_body_t> data;
+    atomic<cas_queue*> next;
+
+    cas_queue() { next = ATOMIC_VAR_INIT(NULL); }
+    ~cas_queue() { data.reset(); next = NULL; }
+};
+
+static atomic<cas_queue*> s_cas_queue_head;
+static atomic<cas_queue*> s_cas_queue_tail;
+
+static void 
+s_cas_queue_push(_log_body_t * data)   {
+    auto sptr = shared_ptr<_log_body_t>(data);
+    auto item = new cas_queue();
+    item->data = sptr;
+
+    if (atomic_load<cas_queue*>(&s_cas_queue_tail) != NULL)
+    {
+        auto tailPtr = atomic_load<cas_queue*>(&s_cas_queue_tail);
+
+        // reset tail->next and tail
+        atomic_exchange<cas_queue*>(&(tailPtr->next), item);
+        atomic_exchange<cas_queue*>(&s_cas_queue_tail, item);
+    }
+    else
+    {
+        atomic_exchange<cas_queue*>(&s_cas_queue_head, item);
+        atomic_exchange<cas_queue*>(&s_cas_queue_tail, item);
+    }
+}
+
+static shared_ptr<_log_body_t> 
+s_cas_queue_pop() {
+    if (atomic_load<cas_queue*>(&s_cas_queue_head) == atomic_load<cas_queue*>(&s_cas_queue_tail))
+    {
+        if (atomic_load<cas_queue*>(&s_cas_queue_head) == NULL) return shared_ptr<_log_body_t>();
+        auto ptr = atomic_load<cas_queue*>(&s_cas_queue_head);
+        auto ret = ptr->data;
+
+        delete ptr;
+        atomic_exchange<cas_queue*>(&s_cas_queue_head, NULL);
+        atomic_exchange<cas_queue*>(&s_cas_queue_tail, NULL);
+        return ret;
+    }
+    else
+    {
+        auto ptr = atomic_load<cas_queue*>(&s_cas_queue_head);
+        auto ret = ptr->data;
+        atomic_exchange<cas_queue*>(&s_cas_queue_head, atomic_load<cas_queue*>(&(ptr->next)));
+
+        delete ptr;
+        return ret;
+    }
+}
+
+static bool 
+s_cas_queue_empty()    {
+    return atomic_load<cas_queue*>(&s_cas_queue_head) == NULL;
+}
+
+
+
+/* ------------------------------------
 * The helpers
 * ------------------------------------
 */
@@ -116,7 +185,7 @@ struct _log_body_t {
 
 static bool _logger_isstartup = false;
 static pthread_t _logger_thread;
-static deque<_log_body_t> _logger_queue;
+static cas_queue _logger_queue;
 
 // the spin-locks
 static atomic<bool> _logger_lock_wait = ATOMIC_VAR_INIT(true);
@@ -198,10 +267,10 @@ static void
 _logger_queue_wait(size_t secs)   {
     static uint64_t ts = labor::timestamp_now();
 
-    // To avoid the idle-loop to waste the CPU. use sleep(0)
+    // To avoid spinlock's idle-loop to waste the CPU. use sleep(1)
     while (std::atomic_load(&_logger_lock_wait) == true)
     {
-        labor::time_sleep(0);
+        labor::time_sleep(1);
         uint64_t now = labor::timestamp_now();
         // if timeout, unlock
         if (now - ts >= secs * 1000)
@@ -219,7 +288,7 @@ _logger_queue_wait(size_t secs)   {
 */
 static inline bool
 _logger_queue_has() {
-    return _logger_queue.size() > 0;
+    return !s_cas_queue_empty();
 }
 
 
@@ -238,12 +307,12 @@ _logger_queue_handler(void * args) {
             continue;
         }
         // FIXIT: queue is not thread-safe container, if queue is writting when you read it...
-        auto log = _logger_queue.front();
-        _logger_queue_write(&log);
-        _logger_queue.pop_front();
+        auto log = s_cas_queue_pop();
+        _logger_queue_write(log.get());
         // resize the queue
-        if (_logger_queue.size() == 0)
-            _logger_queue.shrink_to_fit();
+        /*if (_logger_queue.size() == 0)
+            _logger_queue.shrink_to_fit();*/
+        labor::time_sleep(1);
     }
 }
 
@@ -269,16 +338,22 @@ _logger_queue_start()   {
 */
 static void
 _logger_queue_push(int level, const string & filename, int line, const string & content)    {
-    _log_body_t ls;
+    //_log_body_t ls;
+    _log_body_t * ls = new _log_body_t;
     auto trueFile = _logger_queue_datefile();
     const char * filepath = _logger_strip_source_filename(filename.c_str());
-    ls.logpath = trueFile;
-    ls.filepath = filepath;
-    ls.text = content;
-    ls.line = line;
-    ls.level = level;
+    //ls.logpath = trueFile;
+    //ls.filepath = filepath;
+    //ls.text = content;
+    //ls.line = line;
+    //ls.level = level;
+    ls->logpath = trueFile;
+    ls->filepath = filepath;
+    ls->text = content;
+    ls->line = line;
+    ls->level = level;
 
-    _logger_queue.push_back(ls);
+    s_cas_queue_push(ls);
 
     // if push success, resume the log thread immediately.
     _logger_queue_resume();
@@ -304,8 +379,8 @@ labor::Logger::init()  {
 
 void
 labor::Logger::dispose()    {
-    _logger_queue.clear();
-    _logger_queue.shrink_to_fit();
+    //_logger_queue.clear();
+    //_logger_queue.shrink_to_fit();
 }
 
 

@@ -38,6 +38,13 @@ namespace labor
     void time_sleep(int msecs);
 
 
+    
+    // for path
+    // --------------------------------------------
+    std::string path_getfull(const std::string & relpath);
+
+
+
     // for Json
     // --------------------------------------------
     class _jsondoc_impl;
