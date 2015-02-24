@@ -156,3 +156,4 @@ $RECYCLE.BIN/
 /deps
 /src/Debug
 *.log.*
+/src/services

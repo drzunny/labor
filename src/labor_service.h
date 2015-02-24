@@ -23,8 +23,9 @@ namespace labor
             Lua = 1
         };
 
+        static bool setEnv();
         static void init();
-        static bool addHandler(const std::string & name, const std::string & script);
+        static bool addHandler(const std::string & name);
         static int handleRequest(const Request * req, std::string & error = std::string(""));
         static std::string lastError();
 

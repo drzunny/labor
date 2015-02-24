@@ -186,7 +186,7 @@ labor::time_sleep(int msecs)    {
 // For path
 // ---------------------------------------
 string 
-labor::path_getfull(const std::string & relpath)    {    
+labor::path_getfull(const string & relpath)    {    
     char buff[256];
 #if WIN32
     GetFullPathNameA(relpath.c_str(), 256, buff, NULL);
@@ -196,6 +196,17 @@ labor::path_getfull(const std::string & relpath)    {
     return string(buff);
 }
 
+
+void
+labor::path_chdir(const string & path)  {
+    string fullpath = labor::path_getfull(path);
+
+#ifdef WIN32
+    SetCurrentDirectoryA(fullpath.c_str());
+#else
+    chdir(fullpath.c_str());
+#endif
+}
 
 // For Json
 // ---------------------------------------

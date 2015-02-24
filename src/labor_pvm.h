@@ -22,7 +22,7 @@ namespace labor
         static void dispose();
         static void loadModule(const std::string & module, PVMType type = PVMType::PUBSUB);
 
-        static int execute(const std::string & module, const std::string & args, PVMType type = PVMType::PUBSUB);
+        static int execute(const std::string & module, const std::string & args = "", PVMType type = PVMType::PUBSUB);
     };
 }
 

@@ -14,6 +14,7 @@
 
 // event loop
 #include "labor_event.h"
+#include "labor_service.h"
 
 // Python Extension
 #include "labor_pvm.h"

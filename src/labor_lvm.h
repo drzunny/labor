@@ -20,6 +20,7 @@ namespace labor
         static bool init();
         static void dispose();
 
+        static void loadModule(const std::string & module, LVMType type);
         static int execute(const std::string & module, const std::string & args, LVMType type);
 
     private:

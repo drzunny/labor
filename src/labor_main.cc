@@ -28,11 +28,12 @@ static bool
 _labor_prepare(int argc, char * argv[])    {
     bool ok = true;
     
-    // The logger::init must be the first. because `cwd` will be change after init python
+    // The logger::init must be the first. `cwd` will be changed after this;
     LABOR_OPERATION_START(labor::Logger::init());
-    
+    LABOR_OPERATION_START(labor::Service::setEnv());
     if (labor::Options::enablePython()){
         LABOR_OPERATION_START(labor::PVM::init());
+        printf("\n%d\n", labor::PVM::execute("echo"));
     }
     if (labor::Options::enableLua())    {
         LABOR_OPERATION_START(labor::LVM::init());

@@ -42,6 +42,7 @@ namespace labor
     // for path
     // --------------------------------------------
     std::string path_getfull(const std::string & relpath);
+    void path_chdir(const std::string & path);
 
 
 

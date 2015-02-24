@@ -1,6 +1,7 @@
 #include "labor_event.h"
 #include "labor_connect.h"
 #include "labor_request.h"
+#include "labor_service.h"
 #include "labor_utils.h"
 #include "labor_log.h"
 #include "labor_def.h"
@@ -68,7 +69,10 @@ private:
 
         for (auto p : packages)
         {
-            pubsub_.setFilter(p);
+            labor::Service::addHandler(p);
+
+            // ! No necessary to set filter now
+            //pubsub_.setFilter(p);
         }
     }
 };
