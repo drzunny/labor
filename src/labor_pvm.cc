@@ -90,8 +90,31 @@ SETUP_ARGS:
 }
 
 
+static void
+_pvm_error_readline(const char * filename, int line, string * msg)  {
+    FILE * f = fopen(filename, "r");
+    if (f == NULL)  {
+        (*msg).append("\n");
+        return;
+    }
+    char linebuf[1024];
+    int ln = 1;
+    while (fgets(linebuf, 1024, f)) {
+        if (ln != line) {
+            ln++;
+            continue;
+        }
+        char * ch = linebuf;
+        (*msg).append(linebuf);
+        break;
+    }
+    //(*msg).append("\n");
+    fclose(f);
+}
+
+
 static int
-_pvm_error_trackback(PyObject * ex, PyObject * v, PyObject * trace, long * limit, string * msg)    {
+_pvm_error_trackback(PyObject * trace, long * limit, string * msg)    {
     long depth = 0;
     int err = 0;
     PyTracebackObject * tb, *tb1;
@@ -116,11 +139,13 @@ _pvm_error_trackback(PyObject * ex, PyObject * v, PyObject * trace, long * limit
                 );
             (*msg).append(linebuf);
         }
+        _pvm_error_readline(PyString_AsString(tb->tb_frame->f_code->co_filename), tb->tb_lineno, msg);
         depth--;
         tb = tb->tb_next;
         if (err == 0)
             err = PyErr_CheckSignals();
     }
+    // Get Current Code
     return err;
 }
 
@@ -145,10 +170,32 @@ _pvm_error_string(string & msg) {
         return;
     }
     else
-    {    
-        err = _pvm_error_trackback(pType, pValue, pTrace, &limit, &msg);
+    {
+        err = _pvm_error_trackback(pTrace, &limit, &msg);
+        if (PyExceptionClass_Check(pType))
+        {
+            // exception.xxxx
+            char * classname = PyExceptionClass_Name(pType);
+            // .xxx
+            char * dot = strrchr(classname, '.');
+            // dot+1 = xxx
+            msg.append(dot+1);
+        }
+        printf("err = %d\n", err);
+        if (err == 0 && pValue != Py_None)
+        {
+            PyObject * s = PyObject_Str(pValue);
+            if (PyString_Check(s) && PyString_GET_SIZE(s) != 0)  {
+                msg.append(": ");
+                msg.append(PyString_AsString(s));
+            }
+            __DECRREF(s);
+            __DECRREF(pValue);
+        }
+        __DECRREF(pType);
+        __DECRREF(pTrace);
+        PyErr_Clear();
     }
-    // Print Exception
 }
 
 static int
@@ -175,7 +222,7 @@ _pvm_service_exec(const string & module, labor::PVM::PVMType type, const string 
     {
         // why i cannot get these?
 #ifdef LABOR_DEBUG
-        PyErr_Print();  
+        PyErr_Print();
 #else
         string errMsg;
         _pvm_error_string(errMsg);
@@ -201,7 +248,7 @@ labor::PVM::init()  {
     // Init the Python VM. Fuck GIL.
     if (!Py_IsInitialized())    {
         Py_SetProgramName("labor");
-        Py_Initialize();        
+        Py_Initialize();
         labor::PVM::loadModule("echo");
     }
 
