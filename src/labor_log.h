@@ -4,22 +4,32 @@
 #include <memory>
 #include <string>
 
+// Sometimes, We will disabled the logger to debug the logger.
+#ifndef LABOR_ALL_LOGGER_IS_DISABLE
 
-#ifdef LABOR_DEBUG
-# define LOG_DEBUG \
-    (labor::Logger(labor::Logger::LV_DEBUG, __FILE__, __LINE__).write)
+#  ifdef LABOR_DEBUG
+#   define LOG_DEBUG \
+      (labor::Logger(labor::Logger::LV_DEBUG, __FILE__, __LINE__).write)
+#  else
+#   define LOG_DEBUG
+#  endif
+
+#  define LOG_INFO \
+      (labor::Logger(labor::Logger::LV_INFO, __FILE__, __LINE__).write)
+
+#  define LOG_WARNING \
+      (labor::Logger(labor::Logger::LV_WARNING, __FILE__, __LINE__).write)
+
+#  define LOG_ERROR \
+      (labor::Logger(labor::Logger::LV_ERROR, __FILE__, __LINE__).write)
+
+
 #else
+
 # define LOG_DEBUG
-#endif
-
-#define LOG_INFO \
-    (labor::Logger(labor::Logger::LV_INFO, __FILE__, __LINE__).write)
-
-#define LOG_WARNING \
-    (labor::Logger(labor::Logger::LV_WARNING, __FILE__, __LINE__).write)
-
-#define LOG_ERROR \
-    (labor::Logger(labor::Logger::LV_ERROR, __FILE__, __LINE__).write)
+# define LOG_INFO
+# define LOG_WARNING
+# define LOG_ERROR
 
 #endif
 
@@ -60,3 +70,5 @@ namespace labor
         
     };
 }
+
+#endif
