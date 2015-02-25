@@ -6,6 +6,6 @@ import zmq
 
 if __name__ == '__main__':
     lb = Labor('*:1808', Labor.TYPE_PUBSUB)   
-    for i in xrange(0, 10000):        
+    for i in xrange(0, 50000):        
         lb.use('echo')
         time.sleep(0.001)
