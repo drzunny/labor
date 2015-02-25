@@ -16,15 +16,24 @@ static string _service_root_dir = labor::readConfig("services.service_path", "./
 
 
 static inline int
-_service_call_method(const char * method, const char * args, int type)    {
+_service_call_method(const char * method, const char * args, int type, string & err)    {
     // Check method is python or lua
     int methodType = 0;
+    int ret = -1;
 
-    if (methodType == 0)
-        return labor::PVM::execute(method, args, (labor::PVM::PVMType)type);
-    else
-        return labor::LVM::execute(method, args, (labor::LVM::LVMType)type);
-    return -1;
+    if (methodType == 0)    
+    {
+        ret = labor::PVM::execute(method, args, (labor::PVM::PVMType)type);
+        if (ret == 500)
+            err = labor::PVM::lastError();
+    }
+    else    
+    {
+        ret = labor::LVM::execute(method, args, (labor::LVM::LVMType)type);
+        if (ret == 500)
+            err = labor::LVM::lastError();
+    }
+    return ret;
 }
 
 
@@ -93,7 +102,7 @@ labor::Service::addHandler(const string & name)    {
         //labor::LVM::loadModule(name, labor::LVM::REQREP);
         return true;
     default:
-        LOG_ERROR("unknown lang ?");
+        LOG_ERROR("unknown lang?");
         return false;
     }
 }
@@ -101,7 +110,7 @@ labor::Service::addHandler(const string & name)    {
 
 int
 labor::Service::handleRequest(const labor::Request * req, string & error) {
-    int ret = _service_call_method(req->actionName().c_str(), req->args().c_str(), req->serviceType());
+    int ret = _service_call_method(req->actionName().c_str(), req->args().c_str(), req->serviceType(), error);
     return ret;
 }
 

@@ -41,10 +41,13 @@ public:
                 switch (code)
                 {
                 case 404:
-                    LOG_ERROR("service <%s> not found! ", req.actionName().c_str());
+                    LOG_ERROR("Service <%s> not found! ", req.actionName().c_str());
                     break;
                 case 500:
-                    LOG_ERROR("Service Error: %s", req.lastError().c_str());
+                    LOG_ERROR("Service <%s> Error\n%s", req.actionName().c_str(), req.lastError().c_str());
+                    break;
+                case -1:
+                    LOG_ERROR("Unknown Error");
                     break;
 
                 default:
@@ -65,12 +68,16 @@ private:
     void _init()
     {
         auto packages = labor::readInstallModules();
-        auto pubsub_addr = labor::readConfig("labor.pubsub_addr");
+        // TODO: enable UDP next version
+        bool istcp = true;        
+        auto pubsub_addr = string(istcp?"tcp://":"udp://") + labor::readConfig("labor.pubsub_addr", "127.0.0.1:1808");
+
+        pubsub_.bind(pubsub_addr);
+        pubsub_.setFilter("{");
 
         for (auto p : packages)
         {
             labor::Service::addHandler(p);
-
             // ! No necessary to set filter now
             //pubsub_.setFilter(p);
         }

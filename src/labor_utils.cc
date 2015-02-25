@@ -118,8 +118,10 @@ labor::readConfig(const string & name, const string & dval) {
     LABOR_ASSERT(ok == true, "labor.conf cannot found!");
 #endif
 
-    if (ini.count(name) == 0)
+    if (ini.count(name) == 0)   {
+        ini.add(name, dval);
         return dval;
+    }
     string v = ini.get<string>(name);
     if (v.empty()) return dval;
     return v;
@@ -222,7 +224,7 @@ _set_json_object(rapidjson::Document & d, const char * k, T && v)  {
 
 static inline const rapidjson::Value &
 _check_json_object(const rapidjson::Document & d, const char * key = "") {
-    if (strcmp(key, "") == 0)
+    if (strcmp(key, "") != 0)
         return d[key];
     return d;
 }

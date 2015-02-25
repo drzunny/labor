@@ -33,7 +33,6 @@ _labor_prepare(int argc, char * argv[])    {
     LABOR_OPERATION_START(labor::Service::setEnv());
     if (labor::Options::enablePython()){
         LABOR_OPERATION_START(labor::PVM::init());
-        printf("\n%d\n", labor::PVM::execute("echo"));
     }
     if (labor::Options::enableLua())    {
         LABOR_OPERATION_START(labor::LVM::init());

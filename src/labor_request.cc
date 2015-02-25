@@ -30,7 +30,7 @@ public:
     }
 
     int serviceType()   {
-        return doc_.get("serviceType").toInt();
+        return doc_.get("stype").toInt();
     }
 
 private:
@@ -59,7 +59,7 @@ labor::Request::isValid(const string & msg)   {
     if (json.isNull())
         return false;
     // Check Require Elements
-    if (json.has("action") && json.has("args") && json.has("header") &&
+    if (json.has("action") && json.has("args") && json.has("headers") &&
         json.isString("action"))
         return true;
     return false;

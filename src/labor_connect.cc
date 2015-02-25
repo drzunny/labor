@@ -44,7 +44,8 @@ public:
 
     void bind(const string & addr)
     {
-        socket_.bind(addr.c_str());
+        if (this->types_ == labor::Connector::PUBSUB)
+            socket_.connect(addr.c_str());
     }
 
     void setFilter(const string & name)

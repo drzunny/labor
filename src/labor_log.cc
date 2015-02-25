@@ -255,8 +255,11 @@ static void
 _logger_queue_resume() {
     const bool isLock = false;
     bool check = std::atomic_exchange(&_logger_lock_wait, isLock);
-    if (check)
+
+#ifdef LABOR_DEBUG
+    if (check && labor::Logger::enableStdout())
         printf("\n[INFO]  the queue was been unlocked\n");
+#endif
 }
 
 

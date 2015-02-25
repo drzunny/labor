@@ -14,6 +14,9 @@ using namespace std;
 * The Class Implementation
 * ------------------------------------
 */
+string labor::LVM::lastError_ = "";
+
+
 bool
 labor::LVM::init()  {
     return true;
@@ -35,4 +38,12 @@ labor::LVM::loadModule(const string & module, labor::LVM::LVMType type)    {
 int
 labor::LVM::execute(const string & module, const string & args, labor::LVM::LVMType type)   {
     return 200;
+}
+
+
+string
+labor::LVM::lastError() {
+    string msg = LVM::lastError_;
+    LVM::lastError_ = "";
+    return msg;
 }

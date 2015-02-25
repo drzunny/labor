@@ -22,9 +22,11 @@ namespace labor
 
         static void loadModule(const std::string & module, LVMType type);
         static int execute(const std::string & module, const std::string & args, LVMType type);
+        static std::string lastError();
 
     private:
         static std::shared_ptr<LVM> s_pvm_;
+        static std::string lastError_;
     };
 }
 

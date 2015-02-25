@@ -23,6 +23,10 @@ namespace labor
         static void loadModule(const std::string & module, PVMType type = PVMType::PUBSUB);
 
         static int execute(const std::string & module, const std::string & args = "", PVMType type = PVMType::PUBSUB);
+        static std::string lastError();
+
+    private:
+        static std::string lastError_;
     };
 }
 

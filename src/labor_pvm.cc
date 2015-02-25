@@ -78,13 +78,13 @@ SETUP_ARGS:
     PyTuple_SetItem(tp, 0, vars);
 
     // Decr the ref of value
-    __DECRREF(tArgs);
-    __DECRREF(vModule);
-    __DECRREF(vArgs);
-    __DECRREF(tHeader);
-    __DECRREF(vHeader);
-    __DECRREF(vVersion);
-    __DECRREF(vars);
+    __XDECRREF(tArgs);
+    //__XDECRREF(vModule);
+    __XDECRREF(vArgs);
+    __XDECRREF(tHeader);
+    __XDECRREF(vHeader);
+    __XDECRREF(vVersion);
+    __XDECRREF(vars);
 
     return tp;
 }
@@ -114,7 +114,7 @@ _pvm_error_readline(const char * filename, int line, string * msg)  {
 
 
 static int
-_pvm_error_trackback(PyObject * trace, long * limit, string * msg)    {
+_pvm_error_traceback(PyObject * trace, long * limit, string * msg)    {
     long depth = 0;
     int err = 0;
     PyTracebackObject * tb, *tb1;
@@ -171,7 +171,7 @@ _pvm_error_string(string & msg) {
     }
     else
     {
-        err = _pvm_error_trackback(pTrace, &limit, &msg);
+        err = _pvm_error_traceback(pTrace, &limit, &msg);
         if (PyExceptionClass_Check(pType))
         {
             // exception.xxxx
@@ -179,9 +179,8 @@ _pvm_error_string(string & msg) {
             // .xxx
             char * dot = strrchr(classname, '.');
             // dot+1 = xxx
-            msg.append(dot+1);
+            msg.append(dot + 1);
         }
-        printf("err = %d\n", err);
         if (err == 0 && pValue != Py_None)
         {
             PyObject * s = PyObject_Str(pValue);
@@ -215,6 +214,10 @@ _pvm_service_exec(const string & module, labor::PVM::PVMType type, const string 
     __DECRREF(vars);
     if (ret != NULL)
     {
+        if (type != labor::PVM::PUBSUB)
+        {
+            // TODO: response
+        }
         __DECRREF(ret);
         return 0;
     }
@@ -224,10 +227,7 @@ _pvm_service_exec(const string & module, labor::PVM::PVMType type, const string 
 #ifdef LABOR_DEBUG
         PyErr_Print();
 #else
-        string errMsg;
-        _pvm_error_string(errMsg);
-        LOG_INFO("Python Service Error!");        
-        LOG_ERROR("%s", errMsg);        
+        _pvm_error_string(msg);
 #endif
 
         return 500;
@@ -243,6 +243,9 @@ _pvm_service_exec(const string & module, labor::PVM::PVMType type, const string 
 * The Class Implementation
 * ------------------------------------
 */
+string labor::PVM::lastError_ = "";
+
+
 bool
 labor::PVM::init()  {
     // Init the Python VM. Fuck GIL.
@@ -316,7 +319,23 @@ labor::PVM::execute(const string & module, const string & args, labor::PVM::PVMT
     string msg;
     int code = _pvm_service_exec(module, type, args, msg);
     if (code != 0)    {
-        LOG_ERROR("Call Python Module - %s - fail(%d) : %s", module.c_str(), code, msg.c_str());
+        if (code == 500)
+        {
+            PVM::lastError_ = msg;
+            LOG_ERROR("Python Service <%s> Error(500)", module.c_str());
+        }
+        else
+        {
+            LOG_ERROR("Call Python Service <%s> - fail(%d) : %s", module.c_str(), code, msg.c_str());
+        }
     }
     return code;
+}
+
+
+string
+labor::PVM::lastError() {
+    string msg(PVM::lastError_.c_str());
+    PVM::lastError_ = string("");
+    return msg;
 }
