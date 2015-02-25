@@ -157,3 +157,4 @@ $RECYCLE.BIN/
 /src/Debug
 *.log.*
 /src/services
+*.pyc
