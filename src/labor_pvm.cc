@@ -18,7 +18,7 @@ using namespace std;
 #  define __XDECRREF(x)
 #else
 #  define __DECRREF(x)  if (x!=NULL) {Py_DECREF(x);}
-#  define __XDECRREF(x)  if (x!=NULL) {Py_XDECREF(x);}
+#  define __XDECRREF(x)  {Py_XDECREF(x);}
 #endif
 
 struct _pvm_module_t
@@ -42,10 +42,10 @@ static PyObject *
 _pvm_build_args(const char * module, const char * args, const char * header, const char * ver)  {
     PyObject * tp = PyTuple_New(1);
     PyObject * vars = PyDict_New();
-    PyObject * vModule = Py_BuildValue("u", module);
-    PyObject * tArgs = Py_BuildValue("u", args);
-    PyObject * tHeader = header != NULL ? Py_BuildValue("u", header) : NULL;
-    PyObject * vVersion = ver != NULL ? Py_BuildValue("u", ver) : NULL;
+    PyObject * vModule = Py_BuildValue("s", module);
+    PyObject * tArgs = Py_BuildValue("s", args);
+    PyObject * tHeader = header != NULL ? Py_BuildValue("s", header) : NULL;
+    PyObject * vVersion = ver != NULL ? Py_BuildValue("s", ver) : NULL;
     PyObject * vArgs = NULL, *vHeader = NULL;
 
     // Convert the `args` and `headers` to Dict object
@@ -79,12 +79,15 @@ SETUP_ARGS:
 
     // Decr the ref of value
     __XDECRREF(tArgs);
-    //__XDECRREF(vModule);
+    __XDECRREF(vModule);
     __XDECRREF(vArgs);
     __XDECRREF(tHeader);
     __XDECRREF(vHeader);
     __XDECRREF(vVersion);
-    __XDECRREF(vars);
+
+    // note: tuple_setitem will steal the reference of vars.
+    //       no neccessary to decrease it here
+    //__XDECRREF(vars);
 
     return tp;
 }
@@ -188,11 +191,11 @@ _pvm_error_string(string & msg) {
                 msg.append(": ");
                 msg.append(PyString_AsString(s));
             }
-            __DECRREF(s);
-            __DECRREF(pValue);
+            __XDECRREF(s);
         }
-        __DECRREF(pType);
-        __DECRREF(pTrace);
+        __XDECRREF(pValue);
+        __XDECRREF(pType);
+        __XDECRREF(pTrace);
         PyErr_Clear();
     }
 }
@@ -211,14 +214,14 @@ _pvm_service_exec(const string & module, labor::PVM::PVMType type, const string 
     PyObject * vars = _pvm_build_args(module.c_str(), args.c_str(), NULL, NULL);
     PyObject * ret = PyObject_Call(m.method, vars, NULL);
 
-    __DECRREF(vars);
+    __XDECRREF(vars);
     if (ret != NULL)
     {
         if (type != labor::PVM::PUBSUB)
         {
             // TODO: response
         }
-        __DECRREF(ret);
+        __XDECRREF(ret);
         return 0;
     }
     else if (PyErr_Occurred())
