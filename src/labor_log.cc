@@ -38,8 +38,6 @@ so, i just use POSIX Thread to implement it by myself.
 #define __ATOM_QGET(x)   atomic_load<cas_queue*>(&(x))
 #define __ATOM_QSET(x,v) atomic_exchange<cas_queue*>(&(x), (v))
 
-static atomic<bool> s_cas_lock = ATOMIC_VAR_INIT(false);
-
 struct _log_body_t;
 struct cas_queue
 {
@@ -65,18 +63,27 @@ s_cas_queue_push(_log_body_t * data)   {
     auto item = new cas_queue();
     item->data = shared_ptr<_log_body_t>(data);
 
-    if (s_cas_queue_empty())
+    while (true)
     {
-        __ATOM_QSET(s_cas_queue_tail, item);
-        __ATOM_QSET(s_cas_queue_head, __ATOM_QGET(s_cas_queue_tail));
-    }
-    else
-    {
-        auto tailPtr = __ATOM_QGET(s_cas_queue_tail);
-
-        // reset tail->next and tail
-        __ATOM_QSET(tailPtr->next, item);
-        __ATOM_QSET(s_cas_queue_tail, item);
+        if (s_cas_queue_empty())
+        {
+            // nobody will push data after check empty, because i'm the pusher...
+            __ATOM_QSET(s_cas_queue_tail, item);
+            __ATOM_QSET(s_cas_queue_head, __ATOM_QGET(s_cas_queue_tail));
+            return;
+        }
+        else
+        {
+            // sometimes, another thread will clear queue after check empty, so recheck again
+            // just check tail.
+            auto * tail = __ATOM_QGET(s_cas_queue_tail);
+            if (tail == NULL)
+                continue;
+            // reset tail->next and tail
+            __ATOM_QSET(tail->next, item);
+            __ATOM_QSET(s_cas_queue_tail, item);
+            return;
+        }
     }
 }
 
@@ -136,13 +143,13 @@ _logger_level_string(int iLevel)  {
     switch (level)
     {
     case labor::Logger::LV_DEBUG:
-        return "[ DEBUG ]";
+        return "[DEBUG]";
     case labor::Logger::LV_WARNING:
         return "[WARNING]";
     case labor::Logger::LV_ERROR:
-        return "[ ERROR ]";
+        return "[ERROR]";
     default:
-        return "[ INFO ] ";
+        return "[INFO] ";
     }
 }
 

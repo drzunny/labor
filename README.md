@@ -15,7 +15,17 @@ labor, your service will be loaded automatically.
 # Build
 - - -
 
+> labor support Windows and Linux
+
 You should install Python 2.7.x and Gyp at first.
+
+if you are Windows user:
+
++ Visual Studio 2013  (C++11 Required)
+
+And, you are linux user:
+
++ At least GCC 4.4. (C++11 required)
 
 Then, `gyp build.gyp`, the project files will be generated (MSVC project on Windows, Makefile on *nix). Build it and Enjoy it~
 
