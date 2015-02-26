@@ -8,20 +8,20 @@
 #ifndef LABOR_ALL_LOGGER_IS_DISABLE
 
 #  ifdef LABOR_DEBUG
-#   define LOG_DEBUG \
-      (labor::Logger(labor::Logger::LV_DEBUG, __FILE__, __LINE__).write)
+#    define LOG_DEBUG \
+       (labor::Logger(labor::Logger::LV_DEBUG, __FILE__, __LINE__).write)
 #  else
-#   define LOG_DEBUG
+#    define LOG_DEBUG
 #  endif
 
 #  define LOG_INFO \
-      (labor::Logger(labor::Logger::LV_INFO, __FILE__, __LINE__).write)
+       (labor::Logger(labor::Logger::LV_INFO, __FILE__, __LINE__).write)
 
 #  define LOG_WARNING \
-      (labor::Logger(labor::Logger::LV_WARNING, __FILE__, __LINE__).write)
+       (labor::Logger(labor::Logger::LV_WARNING, __FILE__, __LINE__).write)
 
 #  define LOG_ERROR \
-      (labor::Logger(labor::Logger::LV_ERROR, __FILE__, __LINE__).write)
+       (labor::Logger(labor::Logger::LV_ERROR, __FILE__, __LINE__).write)
 
 
 #else

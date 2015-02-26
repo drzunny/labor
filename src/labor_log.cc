@@ -10,6 +10,7 @@
 
 #include <queue>
 #include <atomic>
+#include <algorithm>
 #include <boost/algorithm/string.hpp>
 
 
@@ -34,6 +35,11 @@ so, i just use POSIX Thread to implement it by myself.
 * The CAS(?) Queue
 * ------------------------------------
 */
+#define __ATOM_QGET(x)   atomic_load<cas_queue*>(&(x))
+#define __ATOM_QSET(x,v) atomic_exchange<cas_queue*>(&(x), (v))
+
+static atomic<bool> s_cas_lock = ATOMIC_VAR_INIT(false);
+
 struct _log_body_t;
 struct cas_queue
 {
@@ -41,62 +47,60 @@ struct cas_queue
     atomic<cas_queue*> next;
 
     cas_queue() { next = ATOMIC_VAR_INIT(NULL); }
-    ~cas_queue() { data.reset(); next = NULL; }
+    ~cas_queue() { data.reset(); __ATOM_QSET(next, NULL); }
 };
 
 static atomic<cas_queue*> s_cas_queue_head;
 static atomic<cas_queue*> s_cas_queue_tail;
 
-static void 
-s_cas_queue_push(_log_body_t * data)   {
-    auto sptr = shared_ptr<_log_body_t>(data);
-    auto item = new cas_queue();
-    item->data = sptr;
 
-    if (atomic_load<cas_queue*>(&s_cas_queue_tail) != NULL)
+static inline bool
+s_cas_queue_empty()    {
+    return __ATOM_QGET(s_cas_queue_head) == NULL && __ATOM_QGET(s_cas_queue_tail) == NULL;
+}
+
+
+static void
+s_cas_queue_push(_log_body_t * data)   {
+    auto item = new cas_queue();
+    item->data = shared_ptr<_log_body_t>(data);
+
+    if (s_cas_queue_empty())
     {
-        auto tailPtr = atomic_load<cas_queue*>(&s_cas_queue_tail);
+        __ATOM_QSET(s_cas_queue_tail, item);
+        __ATOM_QSET(s_cas_queue_head, __ATOM_QGET(s_cas_queue_tail));
+    }
+    else
+    {
+        auto tailPtr = __ATOM_QGET(s_cas_queue_tail);
 
         // reset tail->next and tail
-        atomic_exchange<cas_queue*>(&(tailPtr->next), item);
-        atomic_exchange<cas_queue*>(&s_cas_queue_tail, item);
-    }
-    else
-    {
-        atomic_exchange<cas_queue*>(&s_cas_queue_head, item);
-        atomic_exchange<cas_queue*>(&s_cas_queue_tail, item);
+        __ATOM_QSET(tailPtr->next, item);
+        __ATOM_QSET(s_cas_queue_tail, item);
     }
 }
 
-static shared_ptr<_log_body_t> 
+static shared_ptr<_log_body_t>
 s_cas_queue_pop() {
-    if (atomic_load<cas_queue*>(&s_cas_queue_head) == atomic_load<cas_queue*>(&s_cas_queue_tail))
-    {
-        if (atomic_load<cas_queue*>(&s_cas_queue_head) == NULL) return shared_ptr<_log_body_t>();
-        auto ptr = atomic_load<cas_queue*>(&s_cas_queue_head);
-        auto ret = ptr->data;
+    if (__ATOM_QGET(s_cas_queue_head) == NULL)
+        return shared_ptr<_log_body_t>();
 
-        delete ptr;
-        atomic_exchange<cas_queue*>(&s_cas_queue_head, NULL);
-        atomic_exchange<cas_queue*>(&s_cas_queue_tail, NULL);
-        return ret;
+    auto ptr = __ATOM_QGET(s_cas_queue_head);
+    auto ret = ptr->data;
+
+    if (__ATOM_QGET(s_cas_queue_head) == __ATOM_QGET(s_cas_queue_tail))
+    {
+        // set `tail` at first, avoid check head
+        __ATOM_QSET(s_cas_queue_tail, NULL);
+        __ATOM_QSET(s_cas_queue_head, __ATOM_QGET(s_cas_queue_tail));
     }
     else
     {
-        auto ptr = atomic_load<cas_queue*>(&s_cas_queue_head);
-        auto ret = ptr->data;
-        atomic_exchange<cas_queue*>(&s_cas_queue_head, atomic_load<cas_queue*>(&(ptr->next)));
-
-        delete ptr;
-        return ret;
+        __ATOM_QSET(s_cas_queue_head, __ATOM_QGET(ptr->next));
     }
+    delete ptr;
+    return ret;
 }
-
-static bool 
-s_cas_queue_empty()    {
-    return atomic_load<cas_queue*>(&s_cas_queue_head) == NULL;
-}
-
 
 
 /* ------------------------------------
@@ -104,7 +108,7 @@ s_cas_queue_empty()    {
 * ------------------------------------
 */
 static int
-_string2int(const string && s)   {
+_string2int(string && s)   {
     if (s.empty())
         return 0;
     return std::atoi(s.c_str());
@@ -112,8 +116,11 @@ _string2int(const string && s)   {
 
 
 static bool
-_string2bool(const string && s) {
-    return true;
+_string2bool(string && s) {
+    std::transform(s.begin(), s.end(), s.begin(), tolower);
+    if (s.compare("1") == 0 || s.compare("true") == 0 || s.compare("yes") == 0)
+        return true;
+    return false;
 }
 
 
@@ -306,16 +313,12 @@ _logger_queue_handler(void * args) {
         {
             // set lock
             std::atomic_exchange(&_logger_lock_wait, true);
-            _logger_queue_wait(30);
+            _logger_queue_wait(10);
             continue;
         }
-        // FIXIT: queue is not thread-safe container, if queue is writting when you read it...
         auto log = s_cas_queue_pop();
         _logger_queue_write(log.get());
-        // resize the queue
-        /*if (_logger_queue.size() == 0)
-            _logger_queue.shrink_to_fit();*/
-        labor::time_sleep(1);
+        //labor::time_sleep(1);
     }
 }
 
@@ -341,15 +344,9 @@ _logger_queue_start()   {
 */
 static void
 _logger_queue_push(int level, const string & filename, int line, const string & content)    {
-    //_log_body_t ls;
     _log_body_t * ls = new _log_body_t;
     auto trueFile = _logger_queue_datefile();
     const char * filepath = _logger_strip_source_filename(filename.c_str());
-    //ls.logpath = trueFile;
-    //ls.filepath = filepath;
-    //ls.text = content;
-    //ls.line = line;
-    //ls.level = level;
     ls->logpath = trueFile;
     ls->filepath = filepath;
     ls->text = content;
@@ -382,8 +379,8 @@ labor::Logger::init()  {
 
 void
 labor::Logger::dispose()    {
-    //_logger_queue.clear();
-    //_logger_queue.shrink_to_fit();
+    while (!s_cas_queue_empty())
+        s_cas_queue_pop();
 }
 
 

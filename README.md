@@ -1,14 +1,16 @@
+![labor](files/logo.png)
+
+## Not Fast, But Mini!
+
 # Labor
 ---
 
-Are you feeling very terrible when you want to execute some extra operation asynchronously
-(like sending a email or a HTTP request to a callback URL) after your basic operation run successfully,
-but you don't want to implement this feature by multi-threading or fork a new process?
+`Labor` is a Job Scheduler Service. It aims to be as little as possible to influence the server's performance,
+less CPU usage, less Memory usage.
 
-**labor** is your good choice to solve it!
+You can use Lua/Python as the service language. Put your service code into `$LABOR_SERIVCE` directory and restart
+labor, your service will be loaded automatically.
 
-**labor** is a lightweight `serivce-framework` to finished to **EXTRA OPERATION**. It's asynchronously,
-fast!
 
 # Build
 - - -
@@ -28,7 +30,7 @@ labor --conf='you conf file' <other options>
 ## Other Options:
 
 + **--mode <mode>**: debug, normal, optimized. choose a running mode for you service
-+ **--conf <file>**: the directory of `labor.conf` 
++ **--conf <file>**: the directory of `labor.conf`
 + **-h/--help**: print helper text
 + **-v/--version**: print labor's version
 + **--disabled <lang>**: disabled the model, py or lua or none, defaults to none
@@ -52,5 +54,6 @@ Here is the Demo:
     # these operation is non-blocking.
     lb.use('sendEmailMethod', 'helloworld@123.com', 'title', 'fuck')
     lb.use('httpRequest', 'http://127.0.0.1')
+    lb.use('echo')
 
 ```
