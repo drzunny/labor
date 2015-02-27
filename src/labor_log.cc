@@ -50,7 +50,16 @@ static atomic<int> s_cas_queue_tail;
 
 static inline void
 s_cas_queue_init()  {
-    memset(cas_queue, 0, _CAS_RING_SIZE);
+    for (int i = 0; i < _CAS_RING_SIZE; i++)
+        cas_queue[i] = shared_ptr<_log_body_t>(NULL);
+}
+
+
+static void
+s_cas_queue_walk()  {
+    for (int i = 0; i < _CAS_RING_SIZE; i++)    {
+        cas_queue[i].reset();
+    }
 }
 
 static inline bool
@@ -185,6 +194,8 @@ static atomic<bool> _logger_lock_wait = ATOMIC_VAR_INIT(true);
 */
 static void
 _logger_queue_write(const _log_body_t * log)  {
+    if (log == NULL)
+        return;
     static string s_logfile_path = "";
     static FILE * s_logfile_handle = NULL;
 
@@ -293,6 +304,9 @@ _logger_queue_handler(void * args) {
     {
         if (!_logger_queue_has())
         {
+            //if queue is empty, walk and release it
+            s_cas_queue_walk();
+
             // set lock
             std::atomic_exchange(&_logger_lock_wait, true);
             _logger_queue_wait(10);
