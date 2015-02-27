@@ -35,77 +35,53 @@ so, i just use POSIX Thread to implement it by myself.
 * The CAS(?) Queue
 * ------------------------------------
 */
-#define __ATOM_QGET(x)   atomic_load<cas_queue*>(&(x))
-#define __ATOM_QSET(x,v) atomic_exchange<cas_queue*>(&(x), (v))
+#define __ATOM_QGET(x)   atomic_load<int>(&(x))
+#define __ATOM_QSET(x,v) atomic_exchange<int>(&(x), (v))
+#define __ATOM_QGETV(x)  cas_queue[__ATOM_QGET(x)].get()
+#define __ATOM_QADD(x,v) atomic_fetch_add<int>(&(x), (v))
+#define _CAS_RING_SIZE   128
 
 struct _log_body_t;
-struct cas_queue
-{
-    shared_ptr<_log_body_t> data;
-    atomic<cas_queue*> next;
 
-    cas_queue() { next = ATOMIC_VAR_INIT(NULL); }
-    ~cas_queue() { data.reset(); __ATOM_QSET(next, NULL); }
-};
+static shared_ptr<_log_body_t> cas_queue[_CAS_RING_SIZE];
+static atomic<int> s_cas_queue_head;
+static atomic<int> s_cas_queue_tail;
 
-static atomic<cas_queue*> s_cas_queue_head;
-static atomic<cas_queue*> s_cas_queue_tail;
 
+static inline void
+s_cas_queue_init()  {
+    memset(cas_queue, 0, _CAS_RING_SIZE);
+}
 
 static inline bool
 s_cas_queue_empty()    {
-    return __ATOM_QGET(s_cas_queue_head) == NULL && __ATOM_QGET(s_cas_queue_tail) == NULL;
+    return __ATOM_QGET(s_cas_queue_head) == __ATOM_QGET(s_cas_queue_tail);
 }
 
 
 static void
 s_cas_queue_push(_log_body_t * data)   {
-    auto item = new cas_queue();
-    item->data = shared_ptr<_log_body_t>(data);
-
-    while (true)
+    auto sptr = shared_ptr<_log_body_t>(data);
+    cas_queue[__ATOM_QGET(s_cas_queue_tail)] = sptr;
+    auto lastpos = __ATOM_QADD(s_cas_queue_tail, 1);
+    if (lastpos == _CAS_RING_SIZE - 1)
     {
-        if (s_cas_queue_empty())
-        {
-            // nobody will push data after check empty, because i'm the pusher...
-            __ATOM_QSET(s_cas_queue_tail, item);
-            __ATOM_QSET(s_cas_queue_head, __ATOM_QGET(s_cas_queue_tail));
-            return;
-        }
-        else
-        {
-            // sometimes, another thread will clear queue after check empty, so recheck again
-            // just check tail.
-            auto * tail = __ATOM_QGET(s_cas_queue_tail);
-            if (tail == NULL)
-                continue;
-            // reset tail->next and tail
-            __ATOM_QSET(tail->next, item);
-            __ATOM_QSET(s_cas_queue_tail, item);
-            return;
-        }
+        __ATOM_QSET(s_cas_queue_tail, 0);
     }
 }
 
 static shared_ptr<_log_body_t>
 s_cas_queue_pop() {
-    if (__ATOM_QGET(s_cas_queue_head) == NULL)
+    if (s_cas_queue_empty())
         return shared_ptr<_log_body_t>();
 
-    auto ptr = __ATOM_QGET(s_cas_queue_head);
-    auto ret = ptr->data;
+    auto ret = cas_queue[__ATOM_QGET(s_cas_queue_head)];
+    auto lastpos = __ATOM_QADD(s_cas_queue_head, 1);
+    if (lastpos == _CAS_RING_SIZE - 1)
+    {
+        __ATOM_QSET(s_cas_queue_head, 0);
+    }
 
-    if (__ATOM_QGET(s_cas_queue_head) == __ATOM_QGET(s_cas_queue_tail))
-    {
-        // set `tail` at first, avoid check head
-        __ATOM_QSET(s_cas_queue_tail, NULL);
-        __ATOM_QSET(s_cas_queue_head, __ATOM_QGET(s_cas_queue_tail));
-    }
-    else
-    {
-        __ATOM_QSET(s_cas_queue_head, __ATOM_QGET(ptr->next));
-    }
-    delete ptr;
     return ret;
 }
 
@@ -199,7 +175,6 @@ struct _log_body_t {
 
 static bool _logger_isstartup = false;
 static pthread_t _logger_thread;
-static cas_queue _logger_queue;
 
 // the spin-locks
 static atomic<bool> _logger_lock_wait = ATOMIC_VAR_INIT(true);
@@ -379,6 +354,7 @@ bool labor::Logger::enableStdout_ = _string2bool(_load_config("log.enable_stdout
 
 bool
 labor::Logger::init()  {
+    s_cas_queue_init();
     _logger_queue_start();
     return true;
 }
