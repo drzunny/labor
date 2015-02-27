@@ -1,4 +1,6 @@
-![labor](files/logo.png)
+![labor](https://cdn3.iconfinder.com/data/icons/social-messaging-productivity-3/128/tools-128.png)
+
+*logo image from Google*
 
 ## Not Fast, But Mini!
 
