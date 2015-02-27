@@ -75,17 +75,6 @@ _lookup_module_dirs(const string & modulePath)
 * The Class Implementation
 * ------------------------------------
 */
-void
-labor::ready(int argc, char * argv[])
-{
-#ifndef LABOR_CONF
-    s_labor_conf = "";
-#else
-    s_labor_conf = LABOR_CONF;
-#endif
-}
-
-
 bool
 labor::fileExists(const string & file)
 {

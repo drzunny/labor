@@ -1,5 +1,8 @@
 #include "labor_opt.h"
 #include "labor_def.h"
+#include "labor_utils.h"
+
+#include <algorithm>
 
 #include <stdio.h>
 #include <stdarg.h>
@@ -67,6 +70,7 @@ labor::Options::parse(int argc, char * argv[])  {
     // if i is a odd-number, it means it's a option name
     // else, position i of the argv is the value of position i-1
     // but when you meet -h or -v..... just return.
+    const char * lastOpt = NULL;
     for (int i = 1; i < argc; i++)  {
         if (_options_in(argv[i], 4, "-h", "--help", "-v", "--version"))
         {
@@ -83,10 +87,39 @@ labor::Options::parse(int argc, char * argv[])  {
             // if odd-number is not a option
             if (!_options_in(argv[i], 3, "--conf", "--mode", "--disabled"))
                 return false;
+            lastOpt = argv[i];            
         }
         else
         {
-
+            if (_options_is(lastOpt, "--conf"))
+            {
+                s_option_conf = labor::path_getfull(argv[i]);
+            }
+            else if (_options_is(lastOpt, "--mode"))
+            {
+                string runningMode(argv[i]);
+                std::transform(runningMode.begin(), runningMode.end(), runningMode.begin(), tolower);
+                if (!_options_in(runningMode.c_str(), 3, "normal", "debug", "fast"))
+                    return false;
+                if (_options_is(runningMode.c_str(), "normal"))
+                    s_option_mode = Options::Mode_Normal;
+                else if (_options_is(runningMode.c_str(), "debug"))
+                    s_option_mode = Options::Mode_Debug;
+                else
+                    s_option_mode = Options::Mode_Optimized;
+            }
+            else if (_options_is(lastOpt, "--disabled"))
+            {
+                string disableLang(argv[i]);
+                std::transform(disableLang.begin(), disableLang.end(), disableLang.begin(), tolower);
+                if (_options_in(disableLang.c_str(), 2, "py", "python"))
+                    s_option_enablepy = false;
+                else if (_options_in(disableLang.c_str(), 2, "lua", "luajit"))
+                    s_option_enablelua = false;
+                else
+                    return false;
+            }
+            lastOpt = NULL;
         }
     }
     return true;
