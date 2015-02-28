@@ -98,7 +98,7 @@ labor::Options::parse(int argc, char * argv[])  {
             else if (_options_is(lastOpt, "--mode"))
             {
                 string runningMode(argv[i]);
-                std::transform(runningMode.begin(), runningMode.end(), runningMode.begin(), tolower);
+                std::transform(runningMode.begin(), runningMode.end(), runningMode.begin(), ::tolower);
                 if (!_options_in(runningMode.c_str(), 3, "normal", "debug", "fast"))
                     return false;
                 if (_options_is(runningMode.c_str(), "normal"))
@@ -111,7 +111,7 @@ labor::Options::parse(int argc, char * argv[])  {
             else if (_options_is(lastOpt, "--disabled"))
             {
                 string disableLang(argv[i]);
-                std::transform(disableLang.begin(), disableLang.end(), disableLang.begin(), tolower);
+                std::transform(disableLang.begin(), disableLang.end(), disableLang.begin(), ::tolower);
                 if (_options_in(disableLang.c_str(), 2, "py", "python"))
                     s_option_enablepy = false;
                 else if (_options_in(disableLang.c_str(), 2, "lua", "luajit"))

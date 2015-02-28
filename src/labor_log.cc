@@ -109,7 +109,7 @@ _string2int(string && s)   {
 
 static bool
 _string2bool(string && s) {
-    std::transform(s.begin(), s.end(), s.begin(), tolower);
+    std::transform(s.begin(), s.end(), s.begin(), ::tolower);
     if (s.compare("1") == 0 || s.compare("true") == 0 || s.compare("yes") == 0)
         return true;
     return false;
