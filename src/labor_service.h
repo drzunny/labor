@@ -26,7 +26,7 @@ namespace labor
         static bool setEnv();
         static void init();
         static bool addHandler(const std::string & name);
-        static int handleRequest(const Request * req, std::string & error = std::string(""));
+        static int handleRequest(const Request * req, std::string & error);
         static std::string lastError();
 
 

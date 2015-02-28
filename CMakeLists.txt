@@ -21,6 +21,7 @@ if(WIN32)
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT")
 
 else()
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
     include_directories("${PROJECT_SOURCE_DIR}/depends/include")
     set(labor_dbg_depends zmq pthread python27 lua)
     set(labor_rel_depends ${labor_dbg_depends})

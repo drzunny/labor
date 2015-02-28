@@ -88,7 +88,7 @@ namespace labor
 
     private:
         std::shared_ptr<_jsondoc_impl> doc_;
-        JsonDoc::JsonDoc(const JsonDoc & o) {};
+        JsonDoc(const JsonDoc & o) {};
     };
 }
 
