@@ -41,13 +41,13 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SolutionDir)..\win-deps\include;$(PYTHON_HOME)\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)..\win-deps\lib;$(PYTHON_HOME)\libs;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)..\depends\include\pthread_win;$(SolutionDir)..\depends\include;$(PYTHON_HOME)\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)..\depends\win32_lib;$(PYTHON_HOME)\libs;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SolutionDir)..\win-deps\include;$(PYTHON_HOME)\include;$(IncludePath)</IncludePath>
-    <LibraryPath>$(SolutionDir)..\win-deps\lib;$(PYTHON_HOME)\libs;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(SolutionDir)..\depends\include\pthread_win;$(SolutionDir)..\depends\include;$(PYTHON_HOME)\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(SolutionDir)..\depends\win32_lib;$(PYTHON_HOME)\libs;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

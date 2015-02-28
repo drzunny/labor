@@ -9,7 +9,7 @@
 # Build results
 
 [D]ebug/
-[Rr]elease/
+[R]elease/
 x64/
 build/
 [Bb]in/
@@ -154,8 +154,11 @@ $RECYCLE.BIN/
 
 # Mac desktop service store files
 .DS_Store
-/deps
 /src/Debug
+/src/Release
 *.log.*
 /src/services
 *.pyc
+
+msvcbuild/Debug
+msvcbuild/Release
