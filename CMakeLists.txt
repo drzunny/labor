@@ -22,8 +22,9 @@ if(WIN32)
 
 else()
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall -g -O0")
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DLABOR_DEBUG -Wall -g -O0")
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O2 -s")
+
     include_directories("${PROJECT_SOURCE_DIR}/depends/include" "/usr/include/python2.7/")
     set(labor_dbg_depends zmq pthread python2.7 lua5.1)
     set(labor_rel_depends ${labor_dbg_depends})

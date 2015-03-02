@@ -12,9 +12,6 @@ using namespace std;
 * The Helper Functions
 * ------------------------------------
 */
-static string _service_root_dir = labor::conf_read("services.service_path", "./services");
-
-
 static inline int
 _service_call_method(const char * method, const char * args, int type, string & err)    {
     // Check method is python or lua
@@ -72,7 +69,8 @@ class labor::_service_impl
 */
 bool
 labor::Service::setEnv()    {
-    string fullpath = labor::path_getfull(_service_root_dir);
+    string root = labor::conf_read("services.service_path", "./services");
+    string fullpath = labor::path_getfull(root);
     labor::path_chdir(fullpath);
     return true;
 }

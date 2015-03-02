@@ -360,14 +360,21 @@ _logger_queue_push(int level, const string & filename, int line, const string & 
 * The class implement
 * ------------------------------------
 */
-string labor::Logger::filepath_ = _load_config("log.file_path", "./");
-string labor::Logger::format_ = _load_config("log.format", "$level>>$file|$line|$datetime| $text");
-int labor::Logger::maxsize_ = _string2int(_load_config("log.file_size", "10"));
-bool labor::Logger::enableStdout_ = _string2bool(_load_config("log.enable_stdout", "1"));
+string labor::Logger::filepath_ = "";
+string labor::Logger::format_ = "";
+int labor::Logger::maxsize_ = 0;
+bool labor::Logger::enableStdout_ = true;
 
 
 bool
 labor::Logger::init()  {
+    // init environment
+    filepath_ = _load_config("log.file_path", "./");
+    format_ = _load_config("log.format", "$level>>$file|$line|$datetime| $text");
+    maxsize_ = _string2int(_load_config("log.file_size", "10"));
+    enableStdout_ = _string2bool(_load_config("log.enable_stdout", "1"));
+
+    // init the queue
     s_cas_queue_init();
     _logger_queue_start();
     return true;

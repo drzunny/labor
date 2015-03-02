@@ -2,7 +2,6 @@
 #include "labor_opt.h"
 #include "labor_def.h"
 
-#include <io.h>
 #include <string.h>
 #include <algorithm>
 #include <boost/algorithm/string.hpp>
@@ -14,6 +13,7 @@
 #include <rapidjson/stringbuffer.h>
 
 #ifdef WIN32
+#   include <io.h>
 #   include <Windows.h>
 #else
 #   include <unistd.h>
