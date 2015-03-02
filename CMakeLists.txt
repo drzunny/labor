@@ -34,3 +34,8 @@ endif(WIN32)
 add_executable(labor ${labor_source})
 target_link_libraries(labor debug ${labor_dbg_depends})
 target_link_libraries(labor optimized ${labor_rel_depends})
+
+message(STATUS "Copy the Serivce file to destination directory....")
+file(MAKE_DIRECTORY ${EXECUTABLE_OUTPUT_PATH}/services)
+file(COPY ${PROJECT_SOURCE_DIR}/files/labor.conf DESTINATION ${EXECUTABLE_OUTPUT_PATH}/labor.conf)
+file(COPY ${PROJECT_SOURCE_DIR}/files/services DESTINATION ${EXECUTABLE_OUTPUT_PATH}/services)
