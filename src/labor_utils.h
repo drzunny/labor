@@ -15,9 +15,8 @@ namespace labor
 {
     // About labor's common function
     // --------------------------------------------
-    bool fileExists(const std::string & file);
-    std::vector<std::string> readInstallModules();
-    std::string readConfig(const std::string & name, const std::string& dval="");
+    std::vector<std::string> conf_modules();
+    std::string conf_read(const std::string & name, const std::string& dval="");
 
 
 
@@ -40,6 +39,7 @@ namespace labor
     
     // for path
     // --------------------------------------------
+    bool path_exists(const std::string & file);
     std::string path_getfull(const std::string & relpath);
     void path_chdir(const std::string & path);
 

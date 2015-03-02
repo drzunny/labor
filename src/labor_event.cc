@@ -67,10 +67,10 @@ private:
 
     void _init()
     {
-        auto packages = labor::readInstallModules();
+        auto packages = labor::conf_modules();
         // TODO: enable UDP next version
         bool istcp = true;        
-        auto pubsub_addr = string(istcp?"tcp://":"udp://") + labor::readConfig("labor.pubsub_addr", "127.0.0.1:1808");
+        auto pubsub_addr = string(istcp?"tcp://":"udp://") + labor::conf_read("labor.pubsub_addr", "127.0.0.1:1808");
 
         pubsub_.bind(pubsub_addr);
         pubsub_.setFilter("{");

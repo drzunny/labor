@@ -12,7 +12,7 @@ using namespace std;
 * The Helper Functions
 * ------------------------------------
 */
-static string _service_root_dir = labor::readConfig("services.service_path", "./services");
+static string _service_root_dir = labor::conf_read("services.service_path", "./services");
 
 
 static inline int
@@ -46,11 +46,11 @@ _service_check_lang(const char * module) {
     labor::string_replace(luaFile, "$name", __S(module));
 
     // Python first
-    if (labor::Options::enablePython() && labor::fileExists(pythonFile))
+    if (labor::Options::enablePython() && labor::path_exists(pythonFile))
     {
         return 0;
     }
-    if (labor::Options::enableLua() && labor::fileExists(luaFile))
+    if (labor::Options::enableLua() && labor::path_exists(luaFile))
     {
         return 1;
     }

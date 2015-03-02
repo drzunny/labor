@@ -287,7 +287,7 @@ labor::PVM::loadModule(const string & module, labor::PVM::PVMType type)  {
     string modulePath = "./$name/__init__.py";
     labor::string_replace(modulePath, "$name", module);
 
-    if (!labor::fileExists(modulePath)) {
+    if (!labor::path_exists(modulePath)) {
         LOG_ERROR("module <%s> not found.", module.c_str());
         return;
     }

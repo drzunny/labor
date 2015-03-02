@@ -1,4 +1,5 @@
 #include "labor_utils.h"
+#include "labor_opt.h"
 #include "labor_def.h"
 
 #include <io.h>
@@ -29,12 +30,12 @@ using namespace boost::property_tree;
 */
 
 // helper macros
-#define _SET_IF_NOT_NULL(p, v) if (p != NULL) *##p = v
+#define _SET_IF_NOT_NULL(p, v) if (p != NULL) *(p) = v
 
 
 // Save the *.conf file's setting
-static ptree s_conf_properties;
-static string s_labor_conf;
+static ptree * s_conf_properties;
+static string  s_labor_conf;
 
 
 static void
@@ -51,17 +52,17 @@ _read_ini_config(const string & file, bool * ok = NULL)
     if (!__is_init)
     {
         __is_init = true;
-        s_conf_properties = ptree();
-        if (!labor::fileExists(file))
+        s_conf_properties = new ptree();
+        if (!labor::path_exists(file))
         {
             _SET_IF_NOT_NULL(ok, false);
-            _default_conf_assignment(s_conf_properties);
-            return s_conf_properties;
+            _default_conf_assignment(*s_conf_properties);
+            return *s_conf_properties;
         }
-        read_ini(file, s_conf_properties);
+        read_ini(file, *s_conf_properties);
     }
     _SET_IF_NOT_NULL(ok, true);
-    return s_conf_properties;
+    return *s_conf_properties;
 }
 
 static vector<string>
@@ -76,7 +77,7 @@ _lookup_module_dirs(const string & modulePath)
 * ------------------------------------
 */
 bool
-labor::fileExists(const string & file)
+labor::path_exists(const string & file)
 {
 #if WIN32
     return _access(file.c_str(), 0) == 0;
@@ -89,8 +90,8 @@ labor::fileExists(const string & file)
 // labor's common
 // -----------------------------------
 vector<string>
-labor::readInstallModules() {
-    auto module_path = labor::readConfig("services.service_path");
+labor::conf_modules() {
+    auto module_path = labor::conf_read("services.service_path");
     vector<string> modules = _lookup_module_dirs(module_path);
 
     return modules;
@@ -98,9 +99,9 @@ labor::readInstallModules() {
 
 
 string
-labor::readConfig(const string & name, const string & dval) {
+labor::conf_read(const string & name, const string & dval) {
     bool ok = true;
-    auto ini = _read_ini_config("", &ok);
+    auto ini = _read_ini_config(labor::Options::ConfigFile().c_str(), &ok);
 
 #ifndef LABOR_DEBUG
     // if use Labor as production,

@@ -13,7 +13,7 @@ using namespace std;
 /*-----------------------
 *   Options variants
 *------------------------*/
-static string                       s_option_conf = "./labor.conf";
+static string                       s_option_conf = labor::path_getfull("./labor.conf");
 static bool                         s_option_enablepy = true;
 static bool                         s_option_enablelua = true;
 static labor::Options::RunningMode  s_option_mode = labor::Options::Mode_Normal;

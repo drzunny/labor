@@ -118,7 +118,7 @@ _string2bool(string && s) {
 
 static inline string
 _load_config(const string & name, const string & dval = "")   {
-    return labor::readConfig(name, dval);
+    return labor::conf_read(name, dval);
 }
 
 
