@@ -260,14 +260,14 @@ public:
     bool isNull() { return d_.IsNull(); }
     bool has(const string & name) { return d_.HasMember(name.c_str()); }
 
-    void set(const string & name, string & s) { _set_json_object(d_, name.c_str(), rapidjson::StringRef(s.c_str())); }
+    void set(const string & name, const string & s) { _set_json_object(d_, name.c_str(), rapidjson::StringRef(s.c_str())); }
     void set(const string & name, int i) { _set_json_object(d_, name.c_str(), i); }
     void set(const string & name, int64_t i)    { _set_json_object(d_, name.c_str(), i); }
     void set(const string & name, double d) { _set_json_object(d_, name.c_str(), d); }
     void set(const string & name, bool b) { _set_json_object(d_, name.c_str(), b); }
     void set(const string & name, rapidjson::Document & d) { _set_json_object(d_, name.c_str(), d); }
 
-    void push(const string & name, string & v)    {
+    void push(const string & name, const string & v)    {
         if (name.empty())
             d_.PushBack(rapidjson::StringRef(v.c_str()), d_.GetAllocator());
         else
@@ -335,19 +335,19 @@ private:
 };
 
 // Set Values
-template<> void labor::JsonDoc::set(const string & name, string & v) { doc_->set(name, v); }
-template<> void labor::JsonDoc::set(const string & name, int & v) { doc_->set(name, v); }
-template<> void labor::JsonDoc::set(const string & name, int64_t & v) { doc_->set(name, v); }
-template<> void labor::JsonDoc::set(const string & name, double & v) { doc_->set(name, v); }
-template<> void labor::JsonDoc::set(const string & name, bool & v) { doc_->set(name, v); }
-template<> void labor::JsonDoc::set(const string & name, labor::JsonDoc & v)  { doc_->set(name, v.doc_->raw()); }
+void labor::JsonDoc::set(const string & name, const string & v) { doc_->set(name, v); }
+void labor::JsonDoc::set(const string & name, int v) { doc_->set(name, v); }
+void labor::JsonDoc::set(const string & name, int64_t v) { doc_->set(name, v); }
+void labor::JsonDoc::set(const string & name, double v) { doc_->set(name, v); }
+void labor::JsonDoc::set(const string & name, bool v) { doc_->set(name, v); }
+void labor::JsonDoc::set(const string & name, labor::JsonDoc & v)  { doc_->set(name, v.doc_->raw()); }
 
-template<> void labor::JsonDoc::push(const string & name, string & v) { doc_->push(name, v); }
-template<> void labor::JsonDoc::push(const string & name, int & v) { doc_->push(name, v); }
-template<> void labor::JsonDoc::push(const string & name, int64_t & v) { doc_->push(name, v); }
-template<> void labor::JsonDoc::push(const string & name, double & v) { doc_->push(name, v); }
-template<> void labor::JsonDoc::push(const string & name, bool & v) { doc_->push(name, v); }
-template<> void labor::JsonDoc::push(const string & name, labor::JsonDoc & v) { doc_->push(name, v.doc_->raw()); }
+void labor::JsonDoc::push(const string & name, const string & v) { doc_->push(name, v); }
+void labor::JsonDoc::push(const string & name, int v) { doc_->push(name, v); }
+void labor::JsonDoc::push(const string & name, int64_t v) { doc_->push(name, v); }
+void labor::JsonDoc::push(const string & name, double v) { doc_->push(name, v); }
+void labor::JsonDoc::push(const string & name, bool v) { doc_->push(name, v); }
+void labor::JsonDoc::push(const string & name, labor::JsonDoc & v) { doc_->push(name, v.doc_->raw()); }
 
 // Get values
 labor::JsonDoc::JsonDoc() : doc_(new labor::_jsondoc_impl()) { }

@@ -62,10 +62,19 @@ namespace labor
         bool has(const std::string & name) const;
         bool isNull() const;
 
-        template<typename T>
-        void set(const std::string & name, T & s);
-        template<typename T> 
-        void push(const std::string & name, T & val);
+        void set(const std::string & name, const std::string & s);
+        void set(const std::string & name, int s);
+        void set(const std::string & name, int64_t s);
+        void set(const std::string & name, double s);
+        void set(const std::string & name, bool s);
+        void set(const std::string & name, JsonDoc & s);
+
+        void push(const std::string & name, const std::string & val);
+        void push(const std::string & name, int val);
+        void push(const std::string & name, int64_t val);
+        void push(const std::string & name, double val);
+        void push(const std::string & name, bool val);
+        void push(const std::string & name, JsonDoc & val);
 
 
         JsonDoc get(const std::string & name) const;
