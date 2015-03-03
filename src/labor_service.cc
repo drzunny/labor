@@ -89,7 +89,7 @@ labor::Service::addHandler(const string & name)    {
         LOG_ERROR("module `%s` cannot be resolved.", name.c_str());
         return false;
     }
-    LOG_INFO("module `%s` has loaded", name.c_str());
+    LOG_INFO("try to load module `%s`", name.c_str());
     switch (lang)
     {
     case (int)labor::Service::Python:
