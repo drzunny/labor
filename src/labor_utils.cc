@@ -129,7 +129,6 @@ labor::conf_modules() {
     auto module_path = labor::conf_read("services.service_path");
     bool ok = true;
     vector<string> modules = _lookup_module_dirs(std::move(module_path), &ok);
-
     return modules;
 }
 
