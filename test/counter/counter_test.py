@@ -11,5 +11,5 @@ if __name__ == '__main__':
         addr = '*:1808'
     lb = Labor(addr, Labor.TYPE_PUBSUB)
     for i in xrange(0, 50000):        
-        lb.use('echo')
+        lb.use('__counter')
         time.sleep(0.001)

@@ -255,7 +255,6 @@ labor::PVM::init()  {
     if (!Py_IsInitialized())    {
         Py_SetProgramName("labor");
         Py_Initialize();
-        labor::PVM::loadModule("echo");
     }
 
     return true;

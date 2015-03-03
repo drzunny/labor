@@ -18,6 +18,7 @@
 #else
 #   include <unistd.h>
 #   include <stdlib.h>
+#   include <dirent.h>
 #endif
 
 using namespace std;
@@ -66,9 +67,43 @@ _read_ini_config(const string & file, bool * ok = NULL)
 }
 
 static vector<string>
-_lookup_module_dirs(const string & modulePath)
+_lookup_module_dirs(string && modulePath, bool * ok)
 {
-    return vector<string>();
+    vector<string> modules;
+#ifdef WIN32
+    string searchDir(modulePath);
+    searchDir.append("*");
+
+    WIN32_FIND_DATAA fileData;
+    BOOL isFound = TRUE;
+    HANDLE hSearcher = ::FindFirstFileA(searchDir.c_str(), &fileData);
+    if (hSearcher == INVALID_HANDLE_VALUE)
+    {
+        *ok = false;
+        return modules;
+    }
+    while (isFound)
+    {
+        if ((fileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) && fileData.cFileName[0] != '.')
+            modules.push_back(fileData.cFileName);
+        isFound = ::FindNextFileA(hSearcher, &fileData);
+    }
+    FindClose(hSearcher);
+#else    
+    dirent * ep = NULL; 
+    DIR * dp = opendir(modulePath.c_str());
+    if (dp == NULL) {
+        *ok = false;
+        return modules;
+    }
+    while (ep = readdir(dp))    {
+        if ((ep->d_type & DT_DIR) && ep->d_name[0] != '.')
+            modules.push_back(ep->d_name);
+    }
+    
+#endif
+    *ok = true;
+    return modules;
 }
 
 
@@ -92,7 +127,8 @@ labor::path_exists(const string & file)
 vector<string>
 labor::conf_modules() {
     auto module_path = labor::conf_read("services.service_path");
-    vector<string> modules = _lookup_module_dirs(module_path);
+    bool ok = true;
+    vector<string> modules = _lookup_module_dirs(std::move(module_path), &ok);
 
     return modules;
 }

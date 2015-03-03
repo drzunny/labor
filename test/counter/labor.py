@@ -22,13 +22,11 @@ env_zmq_context = zmq.Context()
 env_method_regex = re.compile(r'^[0-9]|[^\w]')
 
 # Helpers
-def _create_request(method, stype, *args, **kw):
-    headers = {}
-    headers.update(kw)
+def _create_request(method, stype, headers, **kw):
     d = {
         'version': env_py_labor_version,
         'action': method,
-        'args': json.dumps(args),
+        'args': json.dumps(kw),
         'headers': json.dumps(headers),
         'stype': stype
     }
@@ -76,9 +74,9 @@ class Labor(object):
             self.connection.sndhwm = 1100000
             self.connection.bind("tcp://%s" % addr)
 
-    def use(self, method, *args, **kw):
+    def use(self, method, headers={}, **kw):
         method = _normalize_action_name(method)
-        req = _create_request(method, self.con_type, *args, **kw)
+        req = _create_request(method, self.con_type, headers, **kw)
 
         # if this is a pubsub operation, ignore the return
         self.connection.send(b'%s' % req)

@@ -1,7 +1,9 @@
 # -*-coding:utf8-*-
 
-__counter_number = 0
+env_counter_number = 0
 
 def subscript(req):
-    __counter_number += 1
-    print('You have been request:%d' % __counter_number)
+    # the variable is not read only. so we have to use `global` to refer it
+    global env_counter_number
+    env_counter_number += 1
+    print('You have been request:%d' % env_counter_number)
