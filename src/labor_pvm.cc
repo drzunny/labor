@@ -3,6 +3,8 @@
 #include "labor_utils.h"
 #include "labor_def.h"
 
+#include <iostream>
+#include <fstream>
 #include <unordered_map>
 
 #include <Python.h>
@@ -53,11 +55,13 @@ _pvm_build_args(const char * module, const char * args, const char * header, con
     if (s_pvm_json == NULL) {
         s_pvm_json = PyImport_ImportModule("ujson");
         if (s_pvm_json != NULL)
-            goto SETUP_ARGS;
+            goto SETUP_LOADER;
         s_pvm_json = PyImport_ImportModule("simplejson");
         if (s_pvm_json != NULL)
-            goto SETUP_ARGS;
+            goto SETUP_LOADER;
         s_pvm_json = PyImport_ImportModule("json");
+
+SETUP_LOADER:
         s_pvm_jsonload = PyObject_GetAttrString(s_pvm_json, "loads");
     }
 
@@ -68,7 +72,6 @@ _pvm_build_args(const char * module, const char * args, const char * header, con
         vHeader = PyObject_CallFunction(s_pvm_jsonload, "s", header);
 
 
-SETUP_ARGS:
     // Set to Dict
     PyDict_SetItemString(vars, "module", vModule);
     if (vArgs != NULL) PyDict_SetItemString(vars, "args", vArgs);
@@ -95,24 +98,23 @@ SETUP_ARGS:
 
 static void
 _pvm_error_readline(const char * filename, int line, string * msg)  {
-    FILE * f = fopen(filename, "r");
-    if (f == NULL)  {
+    ifstream pyfile(filename);
+    string lntext;
+    int ln = 1;
+    if (!pyfile)    {
         (*msg).append("\n");
         return;
     }
-    char linebuf[1024];
-    int ln = 1;
-    while (fgets(linebuf, 1024, f)) {
-        if (ln != line) {
+    while (std::getline(pyfile, lntext))    {
+        if (ln != line)  {
             ln++;
             continue;
         }
-        char * ch = linebuf;
-        (*msg).append(linebuf);
+        (*msg).append(std::move(lntext));
+        (*msg).append("\n");
         break;
     }
-    //(*msg).append("\n");
-    fclose(f);
+    pyfile.close();
 }
 
 
@@ -241,7 +243,6 @@ _pvm_service_exec(const string & module, labor::PVM::PVMType type, const string 
 }
 
 
-
 /* ------------------------------------
 * The Class Implementation
 * ------------------------------------
@@ -256,7 +257,6 @@ labor::PVM::init()  {
         Py_SetProgramName("labor");
         Py_Initialize();
     }
-
     return true;
 }
 
@@ -292,7 +292,7 @@ labor::PVM::loadModule(const string & module, labor::PVM::PVMType type)  {
     }
 
     // load from module and cachne it
-    PyObject * pymodule = NULL, *method = NULL;
+    PyObject *pymodule = NULL, *method = NULL;
     pymodule = PyImport_ImportModule(module.c_str());
     if (!pymodule)    {
         LOG_INFO("Load module %s fail", module.c_str());

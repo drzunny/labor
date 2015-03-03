@@ -43,7 +43,6 @@ else()
 
     include_directories("${PROJECT_SOURCE_DIR}/depends/include" "/usr/include/python2.7/")
     set(labor_depends zmq pthread python2.7 lua5.1)
-    set(labor_depends ${labor_dbg_depends})
 
     # Copy the service
     message("labor >> Copy the Serivce file to destination directory")

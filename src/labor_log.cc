@@ -69,8 +69,7 @@ s_cas_queue_empty()    {
 
 
 static void
-s_cas_queue_push(_log_body_t * data)   {
-    auto sptr = shared_ptr<_log_body_t>(data);
+s_cas_queue_push(const shared_ptr<_log_body_t> & sptr)   {
     cas_queue[__ATOM_QGET(s_cas_queue_tail)] = sptr;
     auto lastpos = __ATOM_QADD(s_cas_queue_tail, 1);
     if (lastpos == _CAS_RING_SIZE - 1)
@@ -85,6 +84,7 @@ s_cas_queue_pop() {
         return shared_ptr<_log_body_t>();
 
     auto ret = cas_queue[__ATOM_QGET(s_cas_queue_head)];
+    cas_queue[__ATOM_QGET(s_cas_queue_head)].reset();
     auto lastpos = __ATOM_QADD(s_cas_queue_head, 1);
     if (lastpos == _CAS_RING_SIZE - 1)
     {
@@ -113,12 +113,6 @@ _string2bool(string && s) {
     if (s.compare("1") == 0 || s.compare("true") == 0 || s.compare("yes") == 0)
         return true;
     return false;
-}
-
-
-static inline string
-_load_config(const string & name, const string & dval = "")   {
-    return labor::conf_read(name, dval);
 }
 
 
@@ -340,7 +334,7 @@ _logger_queue_start()   {
 */
 static void
 _logger_queue_push(int level, const string & filename, int line, const string & content)    {
-    _log_body_t * ls = new _log_body_t;
+    shared_ptr<_log_body_t> ls(new _log_body_t);
     auto trueFile = _logger_queue_datefile();
     const char * filepath = _logger_strip_source_filename(filename.c_str());
     ls->logpath = trueFile;
@@ -369,10 +363,10 @@ bool labor::Logger::enableStdout_ = true;
 bool
 labor::Logger::init()  {
     // init environment
-    filepath_ = _load_config("log.file_path", "./");
-    format_ = _load_config("log.format", "$level>>$file|$line|$datetime| $text");
-    maxsize_ = _string2int(_load_config("log.file_size", "10"));
-    enableStdout_ = _string2bool(_load_config("log.enable_stdout", "1"));
+    filepath_ = labor::conf_read("log.file_path", "./");
+    format_ = labor::conf_read("log.format", "$level>>$file|$line|$datetime| $text");
+    maxsize_ = _string2int(labor::conf_read("log.file_size", "10"));
+    enableStdout_ = _string2bool(labor::conf_read("log.enable_stdout", "1"));
 
     // init the queue
     s_cas_queue_init();
