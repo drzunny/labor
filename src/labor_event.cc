@@ -68,7 +68,7 @@ private:
     void _init()
     {
         auto packages = labor::conf_modules();
-        auto pubsub_addr = string("tcp://") + labor::conf_read("labor.pubsub_addr", "127.0.0.1:1808");
+        auto pubsub_addr = string("tcp://") + labor::conf_read("labor.pubsub_addr");
 
         if (packages.size() == 0)   {
             LOG_INFO("no services has been loaded....");

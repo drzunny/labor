@@ -16,7 +16,7 @@ namespace labor
     // About labor's common function
     // --------------------------------------------
     std::vector<std::string> conf_modules();
-    std::string conf_read(const std::string & name, const std::string& dval="");
+    std::string conf_read(const std::string & name);
 
 
 

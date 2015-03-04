@@ -103,6 +103,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="labor.h" />
+    <ClInclude Include="labor_conf.hpp" />
     <ClInclude Include="labor_connect.h" />
     <ClInclude Include="labor_def.h" />
     <ClInclude Include="labor_event.h" />

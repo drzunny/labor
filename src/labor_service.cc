@@ -69,7 +69,7 @@ class labor::_service_impl
 */
 bool
 labor::Service::setEnv()    {
-    string root = labor::conf_read("services.service_path", "./services");
+    string root = labor::conf_read("services.service_path");
     string fullpath = labor::path_getfull(root);
     labor::path_chdir(fullpath);
     return true;

@@ -363,10 +363,10 @@ bool labor::Logger::enableStdout_ = true;
 bool
 labor::Logger::init()  {
     // init environment
-    filepath_ = labor::conf_read("log.file_path", "./");
-    format_ = labor::conf_read("log.format", "$level>>$file|$line|$datetime| $text");
-    maxsize_ = _string2int(labor::conf_read("log.file_size", "10"));
-    enableStdout_ = _string2bool(labor::conf_read("log.enable_stdout", "1"));
+    filepath_ = labor::conf_read("log.file_path");
+    format_ = labor::conf_read("log.format");
+    maxsize_ = _string2int(labor::conf_read("log.file_size"));
+    enableStdout_ = _string2bool(labor::conf_read("log.enable_stdout"));
 
     // init the queue
     s_cas_queue_init();

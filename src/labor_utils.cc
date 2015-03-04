@@ -1,12 +1,12 @@
 #include "labor_utils.h"
 #include "labor_opt.h"
 #include "labor_def.h"
+#include "labor_conf.hpp"
 
 #include <string.h>
 #include <algorithm>
+#include <unordered_map>
 #include <boost/algorithm/string.hpp>
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/ini_parser.hpp>
 
 #include <rapidjson/writer.h>
 #include <rapidjson/document.h>
@@ -22,7 +22,6 @@
 #endif
 
 using namespace std;
-using namespace boost::property_tree;
 
 
 /* ------------------------------------
@@ -35,35 +34,44 @@ using namespace boost::property_tree;
 
 
 // Save the *.conf file's setting
-static ptree * s_conf_properties;
-static string  s_labor_conf;
+static shared_ptr<labor::Conf> s_conf_properties = shared_ptr<labor::Conf>();
 
 
 static void
-_default_conf_assignment(ptree & conf)  {
-    conf.add("services.service_path", "./services");
-    conf.add("labor.pubsub_addr", "127.0.0.1:1808");
+_default_conf_assignment()  {    
+    // labor main section
+    s_conf_properties->set("labor.pubsub_addr", "127.0.0.1:1808");
+    // service section
+    s_conf_properties->set("services.service_path", labor::path_getfull("./services"));
+    // logger section
+    s_conf_properties->set("log.file_path", labor::path_getfull("./log/"));
+    s_conf_properties->set("log.format", "$level>>$file|$line|$datetime| $text");
+    s_conf_properties->set("log.file_size", "10");
+    s_conf_properties->set("log.enable_stdout", "1");
+    // vm section
+    s_conf_properties->set("pvm.lru_num", "-1");
+    s_conf_properties->set("lvm.lru_num", "-1");
 }
 
 
-static inline ptree &
+static void
 _read_ini_config(const string & file, bool * ok = NULL)
 {
     static bool __is_init = false;
     if (!__is_init)
     {
         __is_init = true;
-        s_conf_properties = new ptree();
+        
+        s_conf_properties = shared_ptr<labor::Conf>(new labor::Conf);
+        _default_conf_assignment();
         if (!labor::path_exists(file))
-        {
+        {            
             _SET_IF_NOT_NULL(ok, false);
-            _default_conf_assignment(*s_conf_properties);
-            return *s_conf_properties;
+            return;
         }
-        read_ini(file, *s_conf_properties);
+        s_conf_properties->readFile(file);
     }
     _SET_IF_NOT_NULL(ok, true);
-    return *s_conf_properties;
 }
 
 static vector<string>
@@ -72,7 +80,7 @@ _lookup_module_dirs(string && modulePath, bool * ok)
     vector<string> modules;
 #ifdef WIN32
     string searchDir(modulePath);
-    searchDir.append("*");
+    searchDir.append("/*");
 
     WIN32_FIND_DATAA fileData;
     BOOL isFound = TRUE;
@@ -134,22 +142,16 @@ labor::conf_modules() {
 
 
 string
-labor::conf_read(const string & name, const string & dval) {
+labor::conf_read(const string & name) {
     bool ok = true;
-    auto ini = _read_ini_config(labor::Options::ConfigFile().c_str(), &ok);
+    _read_ini_config(labor::Options::ConfigFile().c_str(), &ok);
 
 #ifndef LABOR_DEBUG
     // if use Labor as production,
     LABOR_ASSERT(ok == true, "labor.conf cannot found!");
 #endif
 
-    if (ini.count(name) == 0)   {
-        ini.add(name, dval);
-        return dval;
-    }
-    string v = ini.get<string>(name);
-    if (v.empty()) return dval;
-    return v;
+    return s_conf_properties->get(name);
 }
 
 
