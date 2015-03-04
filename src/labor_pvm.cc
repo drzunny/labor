@@ -256,6 +256,11 @@ labor::PVM::init()  {
     if (!Py_IsInitialized())    {
         Py_SetProgramName("labor");
         Py_Initialize();
+#ifndef WIN32
+        // On Linux, sys.path is missing current directory(`.`)
+        // So labor cannot import the services
+        PyRun_SimpleString("import sys\nsys.path.append('.')");
+#endif
     }
     return true;
 }
