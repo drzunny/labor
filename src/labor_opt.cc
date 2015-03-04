@@ -65,7 +65,7 @@ _options_in(const char * cur, int n, ...)   {
 
 bool
 labor::Options::parse(int argc, char * argv[])  {
-    s_labor_root = argv[0];
+    s_labor_root = labor::path_getfull(argv[0]);
     auto lastpos = s_labor_root.find_last_of("\\/");
     s_labor_root = s_labor_root.substr(0, lastpos);
 

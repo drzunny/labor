@@ -78,8 +78,9 @@ static vector<string>
 _lookup_module_dirs(string && modulePath, bool * ok)
 {
     vector<string> modules;
-#ifdef WIN32
     string searchDir(modulePath);
+
+#ifdef WIN32
     searchDir.append("/*");
 
     WIN32_FIND_DATAA fileData;
@@ -99,7 +100,7 @@ _lookup_module_dirs(string && modulePath, bool * ok)
     FindClose(hSearcher);
 #else    
     dirent * ep = NULL; 
-    DIR * dp = opendir(modulePath.c_str());
+    DIR * dp = opendir(searchDir.c_str());
     if (dp == NULL) {
         *ok = false;
         return modules;

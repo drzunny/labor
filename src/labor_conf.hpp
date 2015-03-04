@@ -65,7 +65,6 @@ namespace labor
             Str cur_section, cur_key, cur_val;
             int iter = 0;
 
-            bool line_start = false;
             bool section_open = false;
             bool section_close = false;
             bool check_comment = false;
