@@ -42,9 +42,9 @@ _default_conf_assignment()  {
     // labor main section
     s_conf_properties->set("labor.pubsub_addr", "127.0.0.1:1808");
     // service section
-    s_conf_properties->set("services.service_path", labor::path_getfull("./services"));
+    s_conf_properties->set("services.service_path", "@LABOR_ROOT/services");
     // logger section
-    s_conf_properties->set("log.file_path", labor::path_getfull("./log/"));
+    s_conf_properties->set("log.file_path", "@LABOR_ROOT/log/");
     s_conf_properties->set("log.format", "$level>>$file|$line|$datetime| $text");
     s_conf_properties->set("log.file_size", "10");
     s_conf_properties->set("log.enable_stdout", "1");
@@ -144,7 +144,7 @@ labor::conf_modules() {
 string
 labor::conf_read(const string & name) {
     bool ok = true;
-    _read_ini_config(labor::Options::ConfigFile().c_str(), &ok);
+    _read_ini_config(labor::Options::configFile().c_str(), &ok);
 
 #ifndef LABOR_DEBUG
     // if use Labor as production,

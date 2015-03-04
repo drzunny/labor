@@ -1,12 +1,14 @@
 #ifndef __LABOR_CONF_H__
 #define __LABOR_CONF_H__
 
+#include "labor_opt.h"
+
+#include <assert.h>
 #include <string>
 #include <fstream>
 #include <iostream>
 #include <unordered_map>
-
-#include <assert.h>
+#include <boost/algorithm/string.hpp>
 
 namespace labor
 {
@@ -54,6 +56,10 @@ namespace labor
             ln = Str(ln, s, e - s + 1);
         }
 
+        inline void _replace_macro(Str & ln)    {
+            boost::replace_all(ln, "@LABOR_ROOT", labor::Options::laborRoot());
+        }
+
         bool _line_parse(Str && ln, SHashtable & conf, Str & section)   {
             const char c_comment = '#', c_section_start = '[', c_section_end = ']', c_assign = '=';
             Str cur_section, cur_key, cur_val;
@@ -62,9 +68,12 @@ namespace labor
             bool line_start = false;
             bool section_open = false;
             bool section_close = false;
+            bool check_comment = false;
             int assign_ready = -1;
 
             this->_trim_line(ln);
+            this->_replace_macro(ln);
+
             for (auto c : ln)
             {
                 // if current line is a section but it has been closed
@@ -74,6 +83,7 @@ namespace labor
                 switch (c)
                 {
                 case c_comment:
+                    check_comment = true;
                     break;
                 case c_section_start:
                     if (section_open || iter != 0)
@@ -95,6 +105,8 @@ namespace labor
                     break;
                 }
                 iter++;
+                if (check_comment)
+                    break;
             }
             // check if section not close
             if (section_open)

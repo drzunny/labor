@@ -13,6 +13,7 @@ using namespace std;
 /*-----------------------
 *   Options variants
 *------------------------*/
+static string                       s_labor_root = "";
 static string                       s_option_conf = labor::path_getfull("./labor.conf");
 static bool                         s_option_enablepy = true;
 static bool                         s_option_enablelua = true;
@@ -64,9 +65,13 @@ _options_in(const char * cur, int n, ...)   {
 
 bool
 labor::Options::parse(int argc, char * argv[])  {
+    s_labor_root = argv[0];
+    auto lastpos = s_labor_root.find_last_of("\\/");
+    s_labor_root = s_labor_root.substr(0, lastpos);
+
     if (argc == 1)
         return true;
-
+    
     // if i is a odd-number, it means it's a option name
     // else, position i of the argv is the value of position i-1
     // but when you meet -h or -v..... just return.
@@ -127,7 +132,7 @@ labor::Options::parse(int argc, char * argv[])  {
 
 
 const string &
-labor::Options::ConfigFile()    { return s_option_conf; }
+labor::Options::configFile()    { return s_option_conf; }
 
 bool 
 labor::Options::enablePython()  { return s_option_enablepy; }
@@ -155,4 +160,9 @@ labor::Options::checkAndShowVersion()   {
         fprintf(stdout, "labor version: %s\n\n", LABOR_VERSION);
     }
     return s_option_has_version;
+}
+
+const string &
+labor::Options::laborRoot() {
+    return s_labor_root;
 }

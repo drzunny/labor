@@ -30,7 +30,8 @@ namespace labor
 
         static bool parse(int argc, char *argv[]);
 
-        static const std::string & ConfigFile();
+        static const std::string & configFile();
+        static const std::string & laborRoot();
         static bool enablePython();
         static bool enableLua();
         static RunningMode runningMode();

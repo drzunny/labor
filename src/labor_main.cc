@@ -39,7 +39,7 @@ _labor_prepare(int argc, char * argv[])    {
     }    
 
         printf("\nlabor.conf's path:      \"%s\"\nrunning mode:           \"%s\"\n\n",
-        labor::Options::ConfigFile().c_str(), _labor_running_mode());
+        labor::Options::configFile().c_str(), _labor_running_mode());
     return true;
 }
 
