@@ -19,17 +19,13 @@ labor, your service will be loaded automatically.
 
 > labor support Windows and Linux
 
-You should install Python 2.7.x and Gyp at first.
+`labor` is written by C++11, i suggest your compiler version should >= VC2012/GCC4.4
 
-if you are Windows user:
+On Windows, the third-party libraries are ready, you can built it easy with Visual Studio. you can find the solution file in `msvcbuild` directory.
 
-+ Visual Studio 2013  (C++11 Required)
+You can also use CMake to build it too, but use the solution file in msvcbuild is recommended.
 
-And, you are linux user:
-
-+ At least GCC 4.4. (C++11 required)
-
-Then, `gyp build.gyp`, the project files will be generated (MSVC project on Windows, Makefile on *nix). Build it and Enjoy it~
+If you are using *nix. please install `libzmq3-dev` `python2.7` `python2.7-dev` `lua5.1-dev` and `lua5.1`, build it with CMake.
 
 
 # How to use
@@ -41,7 +37,6 @@ labor --conf='you conf file' <other options>
 
 ## Other Options:
 
-+ **--mode <mode>**: debug, normal, optimized. choose a running mode for you service
 + **--conf <file>**: the directory of `labor.conf`
 + **-h/--help**: print helper text
 + **-v/--version**: print labor's version
