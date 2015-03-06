@@ -42,7 +42,7 @@ else()
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O2 -s")
 
     include_directories("${PROJECT_SOURCE_DIR}/depends/include" "/usr/include/python2.7/")
-    set(labor_depends zmq pthread python2.7 lua5.1)
+    set(labor_depends zmq pthread python2.7 lua5.1 dl util)
 
     # Copy the service
     message("labor >> Copy the Serivce file to destination directory")
