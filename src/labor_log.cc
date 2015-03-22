@@ -25,9 +25,9 @@ using namespace std;
 
 /*
 *   TODO.   i want to use other logger library to instead my `Logger` implement.
-but all of them are required fully C++11 support...
-my production environment's GCC is 4.4.7
-so, i just use POSIX Thread to implement it by myself.
+    but all of them are required fully C++11 support...
+    my production environment's GCC is 4.4.7
+    so, i just use POSIX Thread to implement it by myself.
 */
 
 
