@@ -18,26 +18,6 @@ using namespace std;
     lua_pushstring((ls), (v));\
     lua_settable((ls), -3)
 
-#define __LVM_SET_TABLE_I(ls, k, v) \
-    lua_pushstring((ls), (k));\
-    lua_pushinteger((ls), (v));\
-    lua_settable((ls), -3)
-
-#define __LVM_SET_TABLE_N(ls, k, v) \
-    lua_pushstring((ls), (k));\
-    lua_pushnumber((ls), (v));\
-    lua_settable((ls), -3)
-
-#define __LVM_SET_TABLE_NIL(ls, k, v) \
-    lua_pushstring((ls), (k));\
-    lua_pushnil((ls));\
-    lua_settable((ls), -3)
-
-#define __LVM_SET_TABLE_B(ls, k, v) \
-    lua_pushstring((ls), (k));\
-    lua_pushboolean((ls), (v));\
-    lua_settable((ls), -3)
-
 #define __LVM_SET_TABLE_ET(ls, k) \
     lua_pushstring((ls), (k));\
     lua_newtable((ls));\
@@ -171,7 +151,7 @@ _lvm_service_execute(const string & module, const string & args, labor::LVM::LVM
 
     // execute
     int ret = lua_pcall(vm, 1, 0, 0);
-    if (ret != LUA_OK)
+    if (ret != 0)
     {
         switch (ret)
         {
