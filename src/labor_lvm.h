@@ -7,6 +7,7 @@
 
 namespace labor
 {
+    // The Lua VM Manager for `labor`
     class LVM
     {
     public:
@@ -19,13 +20,12 @@ namespace labor
     public:
         static bool init();
         static void dispose();
+        static void loadModule(const std::string & module, LVMType type = LVMType::PUBSUB);
 
-        static void loadModule(const std::string & module, LVMType type);
-        static int execute(const std::string & module, const std::string & args, LVMType type);
+        static int execute(const std::string & module, const std::string & args = "", LVMType type = LVMType::PUBSUB);
         static std::string lastError();
 
     private:
-        static std::shared_ptr<LVM> s_pvm_;
         static std::string lastError_;
     };
 }
