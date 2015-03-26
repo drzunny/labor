@@ -203,7 +203,7 @@ labor::LVM::loadModule(const string & module, labor::LVM::LVMType type)    {
     }
     LABOR_ASSERT(!module.empty(), "module name cannot be empty");
     // because current cwd is services dir
-    string modulePath = "./$name/main.lua";
+    string modulePath = "./$name/init.lua";
     labor::string_replace(modulePath, "$name", module);
 
     // different lua_State per service
@@ -219,11 +219,11 @@ labor::LVM::execute(const string & module, const string & args, labor::LVM::LVMT
         if (code == 500)
         {
             LVM::lastError_ = msg;
-            LOG_ERROR("Python Service <%s> Error(500)", module.c_str());
+            LOG_ERROR("Lua Service <%s> Error(500)", module.c_str());
         }
         else
         {
-            LOG_ERROR("Call Python Service <%s> - fail(%d) : %s", module.c_str(), code, msg.c_str());
+            LOG_ERROR("Call Lua Service <%s> - fail(%d) : %s", module.c_str(), code, msg.c_str());
         }
     }
     return code;

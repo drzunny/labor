@@ -6,16 +6,21 @@
 #include "labor_def.h"
 #include "labor_opt.h"
 
+#include <unordered_map>
+
 using namespace std;
 
 /* ------------------------------------
 * The Helper Functions
 * ------------------------------------
 */
+static unordered_map<string, int> s_service_lang = unordered_map<string, int>();
+
+
 static inline int
 _service_call_method(const char * method, const char * args, int type, string & err)    {
     // Check method is python or lua
-    int methodType = 0;
+    int methodType = s_service_lang[method];
     int ret = -1;
 
     if (methodType == 0)    
@@ -45,10 +50,12 @@ _service_check_lang(const char * module) {
     // Python first
     if (labor::Options::enablePython() && labor::path_exists(pythonFile))
     {
+        s_service_lang[module] = 0;
         return 0;
     }
     if (labor::Options::enableLua() && labor::path_exists(luaFile))
     {
+        s_service_lang[module] = 1;
         return 1;
     }
 
