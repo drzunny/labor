@@ -140,7 +140,7 @@ _lvm_service_execute(const string & module, const string & args, labor::LVM::LVM
 
     // get function
     lua_getglobal(vm, "subscript");
-    if (!lua_isnil(vm, -1) || !lua_isnone(vm, -1))
+    if (lua_isnil(vm, -1) || lua_isnone(vm, -1))
     {
         msg = "`subscript` not found in service";
         return 500;
