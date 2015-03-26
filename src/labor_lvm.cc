@@ -3,6 +3,7 @@
 #include "labor_def.h"
 #include "labor_utils.h"
 
+#include <fstream>
 #include <unordered_map>
 #include <assert.h>
 
@@ -48,12 +49,18 @@ _lvm_json_to_table(lua_State * L, const char * json)    {
     }
     // read keys and set table. ignore Object and Array.
     size_t cnt = 0;
+    lua_newtable(L);
+
     for (auto iter = doc.MemberBegin(); iter != doc.MemberEnd(); iter++)
     {
         // check value
         if (iter->value.IsObject() || iter->value.IsArray())
             continue;
-        lua_pushstring(L, iter->name.GetString());
+
+        // Push Key
+        lua_pushstring(L, iter->name.GetString());        
+
+        // Check and Push value
         if (iter->value.IsBool())
             lua_pushboolean(L, iter->value.GetBool() ? 1 : 0);
         else if (iter->value.IsInt())
@@ -70,16 +77,21 @@ _lvm_json_to_table(lua_State * L, const char * json)    {
             lua_pushnil(L);
         else if (iter->value.IsString())
             lua_pushstring(L, iter->value.GetString());
+        else
+            lua_pushnil(L);
+
         cnt += 1;
     }
     // set table in one time
-    lua_settable(L, -1 * (cnt * 2 + 1));
+    if (cnt > 0)
+        lua_settable(L, -1 * (cnt * 2 + 1));
 }
 
 
 static void
 _lvm_build_args(lua_State * L, const char * module, const char * args, const char * header, const char * ver)   {
     lua_newtable(L);
+
     // Push the request field into table
     __LVM_SET_TABLE_S(L, "module", module);
     __LVM_SET_TABLE_S(L, "version", ver == NULL ? "" : ver); 
@@ -108,17 +120,78 @@ _lvm_build_args(lua_State * L, const char * module, const char * args, const cha
     
 }
 
-static void
-_lvm_error_traceback(lua_State * L)  {
 
+static void
+_lvm_error_readline(const char * filename, int line, string & msg)  {
+    ifstream luafile(filename);
+    string lntext;
+    int ln = 1;
+    if (!luafile)    {
+        msg.append("\n");
+        return;
+    }
+    while (std::getline(luafile, lntext))    {
+        if (ln != line)  {
+            ln++;
+            continue;
+        }
+        msg.append(std::move(lntext));
+        msg.append("\n");
+        break;
+    }
+    luafile.close();
+}
+
+
+static void
+_lvm_error_traceback(lua_State * L, string & msg)  {
+    string reason("");
+    // get reason
+    if (lua_gettop(L) > 0)
+    {
+        if (lua_type(L, -1) == LUA_TSTRING)
+            reason = lua_tostring(L, -1);
+    }
+
+    // Use Lua's `debug.trackback`
+    lua_getfield(L, LUA_GLOBALSINDEX, "debug");
+    if (!lua_istable(L, -1))    {
+        lua_pop(L, -1);
+        goto END_OF_TRACEBACK;
+    }
+    lua_getfield(L, -1, "traceback");
+    if (!lua_isfunction(L, -1)) {
+        lua_pop(L, -2);
+        goto END_OF_TRACEBACK;
+    }
+    // invoke debug.traceback
+    lua_pushvalue(L, 1);
+    lua_pushinteger(L, 2);
+
+    lua_call(L, 2, 1);
+
+    // if vm has full stack traceback. replace the reason variant
+    reason = std::move(string(lua_tostring(L, -1)));
+    // pop stack info
+    lua_pop(L, -1);
+    
+    reason.append("\n");
+    // pop result and `debug` module
+    lua_pop(L, -1);
+
+
+END_OF_TRACEBACK:
+    lua_pop(L, -1);
+    msg.append(reason);
 }
 
 
 static inline void
 _lvm_create_service(const string & key, const string & luafile) {
     LuaVM vm = luaL_newstate();
+    luaL_openlibs(vm);
 
-    luaL_loadfile(vm, luafile.c_str());
+    luaL_dofile(vm, luafile.c_str());
     s_lua_vm[key] = vm;
 }
 
@@ -140,8 +213,9 @@ _lvm_service_execute(const string & module, const string & args, labor::LVM::LVM
 
     // get function
     lua_getglobal(vm, "subscript");
-    if (lua_isnil(vm, -1) || lua_isnone(vm, -1))
+    if (!lua_isfunction(vm, -1))
     {
+        lua_pop(vm, -1);
         msg = "`subscript` not found in service";
         return 500;
     }
@@ -153,19 +227,22 @@ _lvm_service_execute(const string & module, const string & args, labor::LVM::LVM
     int ret = lua_pcall(vm, 1, 0, 0);
     if (ret != 0)
     {
+        // lua's return will be pop here
+        msg.append("\n");
+        _lvm_error_traceback(vm, msg);
+
         switch (ret)
         {
         case LUA_ERRRUN:
-            msg = "Runtime error!"; break;
+            msg.append("\nRuntime error!\n "); break;
         case LUA_ERRMEM:
-            msg = "memory allocation error"; break;
+            msg.append("\nmemory allocation error\n"); break;
         case LUA_ERRERR:
-            msg = "error while running the error handler function"; break;
+            msg.append("\nerror while running the error handler function\n"); break;
         default:
-            msg = "Unknown"; break;
-        }
-        // Todo: this is the error in stack. display error?
-        lua_pop(vm, -1);
+            msg.append("\nUnknown\n"); break;
+        }       
+
         return 500;
     }
     
@@ -182,13 +259,24 @@ string labor::LVM::lastError_ = "";
 
 bool
 labor::LVM::init()  {
+    // do nothing in LVM::init
     return true;
 }
 
 
 void
 labor::LVM::dispose()   {
-    LOG_INFO("Lua VM was not initialized....");
+    if (s_lua_vm.size() == 0)   {
+        LOG_INFO("Lua VM was not initialized....");
+        return;
+    }
+    auto iter = s_lua_vm.begin();
+    while (iter != s_lua_vm.end())
+    {
+        lua_close(iter->second);
+    }
+    s_lua_vm.clear();
+    s_lua_vm.swap(decltype(s_lua_vm)());
 }
 
 
