@@ -7,13 +7,13 @@
 # Labor
 ---
 
-`Labor` is a Job Scheduler Service and it aims to be as little as possible to influence the server's performance. Saving your CPU and memory. 
+`Labor` is a Job Scheduler Service and it aims to be as little as possible to influence the server's performance. Saving your CPU and memory.
 
 
 # Build
 - - -
 
-Firstly, CMake(2.8+) is required. 
+Firstly, CMake(2.8+) is required.
 
 Secondly, `labor` is written by C++11, so your C++ compiler must support C++11's feature.
 
@@ -72,7 +72,7 @@ You can write services yourself with Python/Lua, and put your serivce into $LABO
         |
         +------ __init__.py     # Python Service Entrypoint
         |
-        +------ main.lua       -- Lua Serivce Entrypoint
+        +------ init.lua       -- Lua Serivce Entrypoint
 
 > ### Client
 
