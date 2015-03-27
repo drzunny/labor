@@ -121,68 +121,24 @@ _lvm_build_args(lua_State * L, const char * module, const char * args, const cha
 }
 
 
-static void
-_lvm_error_readline(const char * filename, int line, string & msg)  {
-    ifstream luafile(filename);
-    string lntext;
-    int ln = 1;
-    if (!luafile)    {
-        msg.append("\n");
-        return;
-    }
-    while (std::getline(luafile, lntext))    {
-        if (ln != line)  {
-            ln++;
-            continue;
-        }
-        msg.append(std::move(lntext));
-        msg.append("\n");
-        break;
-    }
-    luafile.close();
-}
-
-
-static void
-_lvm_error_traceback(lua_State * L, string & msg)  {
-    string reason("");
-    // get reason
-    if (lua_gettop(L) > 0)
-    {
-        if (lua_type(L, -1) == LUA_TSTRING)
-            reason = lua_tostring(L, -1);
-    }
-
+static int
+_lvm_error_traceback(lua_State * L)  {
     // Use Lua's `debug.trackback`
     lua_getfield(L, LUA_GLOBALSINDEX, "debug");
     if (!lua_istable(L, -1))    {
-        lua_pop(L, -1);
-        goto END_OF_TRACEBACK;
+        lua_pop(L, 1);
+        return 1;
     }
     lua_getfield(L, -1, "traceback");
     if (!lua_isfunction(L, -1)) {
-        lua_pop(L, -2);
-        goto END_OF_TRACEBACK;
+        lua_pop(L, 2);
+        return 1;
     }
     // invoke debug.traceback
     lua_pushvalue(L, 1);
     lua_pushinteger(L, 2);
-
     lua_call(L, 2, 1);
-
-    // if vm has full stack traceback. replace the reason variant
-    reason = std::move(string(lua_tostring(L, -1)));
-    // pop stack info
-    lua_pop(L, -1);
-    
-    reason.append("\n");
-    // pop result and `debug` module
-    lua_pop(L, -1);
-
-
-END_OF_TRACEBACK:
-    lua_pop(L, -1);
-    msg.append(reason);
+    return 1;
 }
 
 
@@ -192,6 +148,13 @@ _lvm_create_service(const string & key, const string & luafile) {
     luaL_openlibs(vm);
 
     luaL_dofile(vm, luafile.c_str());
+
+    // add `traceback` function in vm stack as the first element
+    // to get all stack traceback, you must put traceback into stack,
+    // use traceback function as callback for `lua_pcall`
+    lua_pushcfunction(vm, _lvm_error_traceback);
+
+    // save vm
     s_lua_vm[key] = vm;
 }
 
@@ -215,7 +178,7 @@ _lvm_service_execute(const string & module, const string & args, labor::LVM::LVM
     lua_getglobal(vm, "subscript");
     if (!lua_isfunction(vm, -1))
     {
-        lua_pop(vm, -1);
+        lua_pop(vm, 1);
         msg = "`subscript` not found in service";
         return 500;
     }
@@ -223,14 +186,13 @@ _lvm_service_execute(const string & module, const string & args, labor::LVM::LVM
     // build arguments
     _lvm_build_args(vm, module.c_str(), args.c_str(), NULL, NULL);
 
-    // execute
-    int ret = lua_pcall(vm, 1, 0, 0);
+    // execute, `errfunc` is call back element,
+    int ret = lua_pcall(vm, 1, 0, 1);
     if (ret != 0)
     {
         // lua's return will be pop here
-        msg.append("\n");
-        _lvm_error_traceback(vm, msg);
-
+        msg.append(lua_tostring(vm, -1));
+        lua_pop(vm, 1);
         switch (ret)
         {
         case LUA_ERRRUN:
