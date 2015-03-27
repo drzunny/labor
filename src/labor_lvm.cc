@@ -142,20 +142,67 @@ _lvm_error_traceback(lua_State * L)  {
 }
 
 
-static inline void
-_lvm_create_service(const string & key, const string & luafile) {
+static void
+_lvm_package_path(LuaVM vm, string && working) {
+    string luapath = "%work/?.lua;%work/?/init.lua;%work/lua/?.lua;%work/lua/?/init.lua";
+#ifdef WIN32
+    string cpath = "%work/?.dll;%work/?/init.dll;%work/lua/?.dll;%work/lua/?/init.dll";
+#else
+    string cpath = "%work/?.so;%work/?/init.so;%work/lua/?.so;%work/lua/?/init.so";
+#endif
+    labor::string_replace(luapath, "%work", working);
+    labor::string_replace(cpath, "%work", working);
+
+    // change current vm's `package.path`
+    lua_getglobal(vm, "package");
+    if (!lua_istable(vm, -1))
+    {
+        LOG_WARNING("`package` module not found in current Lua VM");
+        lua_pop(vm, 1);
+        return;
+    }
+    lua_pushstring(vm, luapath.c_str());
+    lua_setfield(vm, -2, "path");
+
+    // change current vm's `package.cpath`
+    lua_pushstring(vm, cpath.c_str());
+    lua_setfield(vm, -2, "cpath");
+
+    // pop package
+    lua_pop(vm, 1);
+}
+
+
+static inline bool
+_lvm_create_service(const string & key, const string & luafile, string & msg) {
     LuaVM vm = luaL_newstate();
     luaL_openlibs(vm);
 
-    luaL_dofile(vm, luafile.c_str());
+    // Change the lua vm package search path
+    string working = luafile;
+    // luafile = '$working/init.lua'
+    labor::string_replace(working, "init.lua", "");
+    _lvm_package_path(vm, std::move(working));
 
     // add `traceback` function in vm stack as the first element
     // to get all stack traceback, you must put traceback into stack,
     // use traceback function as callback for `lua_pcall`
     lua_pushcfunction(vm, _lvm_error_traceback);
 
+    // equals to `luaL_dofile`, but handle the errors by myself
+    luaL_loadfile(vm, luafile.c_str());
+    int ret = lua_pcall(vm, 0, LUA_MULTRET, 1);
+
+    if (ret != 0)
+    {
+        msg.append(lua_tostring(vm, -1));
+        msg.append("\n load Lua service error");
+        return false;
+    }
+
     // save vm
     s_lua_vm[key] = vm;
+    return true;
 }
 
 
@@ -257,7 +304,11 @@ labor::LVM::loadModule(const string & module, labor::LVM::LVMType type)    {
     labor::string_replace(modulePath, "$name", module);
 
     // different lua_State per service
-    _lvm_create_service(moduleKey, modulePath);
+    string loadMsg;
+    if (!_lvm_create_service(moduleKey, modulePath, loadMsg))
+    {
+        LOG_ERROR("load service `%s` error:\n%s", module.c_str(), loadMsg.c_str());
+    }
 }
 
 

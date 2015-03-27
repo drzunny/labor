@@ -252,7 +252,7 @@ _logger_queue_resume() {
 
 #ifdef LABOR_DEBUG
     if (check && labor::Logger::enableStdout())
-        printf("\n[INFO]  the queue was been unlocked\n");
+        printf("\n[DEBUG]  the queue was been unlocked\n");
 #endif
 }
 
