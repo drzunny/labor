@@ -95,6 +95,7 @@ private:
         // you can bind multi-addr
         for (auto addr : pubsub_addrs)
         {
+            LOG_INFO("bind publisher: %s", addr);
             pubsub_.bind(addr);
         }
 
