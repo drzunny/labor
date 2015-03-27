@@ -285,7 +285,9 @@ labor::LVM::dispose()   {
         lua_close(iter->second);
     }
     s_lua_vm.clear();
-    s_lua_vm.swap(decltype(s_lua_vm)());
+    decltype(s_lua_vm) empty;
+
+    s_lua_vm.swap(empty);
 }
 
 

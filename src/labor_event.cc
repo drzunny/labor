@@ -63,18 +63,41 @@ public:
 
 private:
     labor::Connector pubsub_;
-    // labor::Connector reqrep_;
+
+
+    vector<string> _readPubsubAddrs() {
+        vector<string> addrs;
+        auto addrString = labor::conf_read("labor.pubsub_addr");
+
+        if (addrString.find(";") >= 0)
+        {
+            vector<string> _addr = labor::string_split(addrString, ";");
+            for (auto a : _addr)
+                addrs.push_back(string("tcp://") + a);
+        }
+        else
+        {
+            addrs.push_back(string("tcp://") + addrString);
+        }
+        return addrs;
+    }
+
 
     void _init()
     {
         auto packages = labor::conf_modules();
-        auto pubsub_addr = string("tcp://") + labor::conf_read("labor.pubsub_addr");
+        auto pubsub_addrs = this->_readPubsubAddrs();
 
         if (packages.size() == 0)   {
             LOG_INFO("no services has been loaded....");
         }
 
-        pubsub_.bind(pubsub_addr);
+        // you can bind multi-addr
+        for (auto addr : pubsub_addrs)
+        {
+            pubsub_.bind(addr);
+        }
+
         pubsub_.setFilter("{");
 
         for (auto p : packages)
