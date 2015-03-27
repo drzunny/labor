@@ -237,7 +237,7 @@ _logger_queue_datefile() {
     time_t now = time(NULL);
     strftime(datestr, 10, ".%Y%m%d", localtime(&now));
 
-    s.append("labor.log");
+    s.append("/labor.log");
     return s.append(datestr);
 }
 
