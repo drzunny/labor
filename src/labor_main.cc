@@ -31,15 +31,15 @@ _labor_prepare(int argc, char * argv[])    {
     // The logger::init must be the first. `cwd` will be changed after this;
     LABOR_OPERATION_START(labor::Logger::init());
     LABOR_OPERATION_START(labor::Service::setEnv());
-    if (labor::Options::enablePython()){
+    if (labor::Options::enablePython()) {
         LABOR_OPERATION_START(labor::PVM::init());
     }
     if (labor::Options::enableLua())    {
         LABOR_OPERATION_START(labor::LVM::init());
     }    
 
-        printf("\nlabor.conf's path:      \"%s\"\nrunning mode:           \"%s\"\n\n",
-        labor::Options::configFile().c_str(), _labor_running_mode());
+        printf("\nlabor.conf's path:      \"%s\"\nrunning mode:           \"%s\"\nlog directory:          \"%s\"\n\n",
+        labor::Options::configFile().c_str(), _labor_running_mode(), labor::Logger::filePath().c_str());
     return true;
 }
 

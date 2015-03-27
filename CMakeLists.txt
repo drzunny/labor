@@ -50,6 +50,8 @@ else()
     file(COPY ${PROJECT_SOURCE_DIR}/files/services DESTINATION ${PROJECT_BINARY_DIR})
 endif(WIN32)
 
+file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/log)
+
 # output
 add_executable(labor ${labor_source})
 target_link_libraries(labor ${labor_depends})
