@@ -126,7 +126,8 @@ _pvm_error_traceback(PyObject * trace, long * limit, string * msg)    {
     PyObject * limitObj = PySys_GetObject("tracebacklimit");
     if (limitObj && PyInt_Check(limitObj))
     {
-        if ((*limit = PyInt_AsLong(limitObj) <= 0))
+        *limit = PyInt_AsLong(limitObj);
+        if ( *limit <= 0)
             return -2;
     }
     (*msg).append("\n");

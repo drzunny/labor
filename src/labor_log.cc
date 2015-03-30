@@ -248,11 +248,13 @@ _logger_queue_datefile() {
 static void
 _logger_queue_resume() {
     const bool isLock = false;
-    bool check = std::atomic_exchange(&_logger_lock_wait, isLock);
 
 #ifdef LABOR_DEBUG
+    bool check = std::atomic_exchange(&_logger_lock_wait, isLock);
     if (check && labor::Logger::enableStdout())
         printf("\n[DEBUG]  the queue was been unlocked\n");
+#else
+    std::atomic_exchange(&_logger_lock_wait, isLock);
 #endif
 }
 

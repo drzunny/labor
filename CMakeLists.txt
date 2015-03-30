@@ -21,6 +21,8 @@ if(WIN32)
     # set release options
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT")
 
+    set(CMAKE_CXX_FLAGS '${CMAKE_CXX_FLAGS} /W4 /wd"4100" /wd"4505" /wd"4127" /wd"4819"')
+
     # Copy the DLL file to Path
     message("labor >> Copy the Windows dependece")
     file(GLOB labor_DEPS_DLL ${PROJECT_SOURCE_DIR}/depends/win32_lib/*.dll)
