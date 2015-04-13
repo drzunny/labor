@@ -6,7 +6,6 @@
 #include <string.h>
 #include <algorithm>
 #include <unordered_map>
-#include <boost/algorithm/string.hpp>
 
 #include <rapidjson/writer.h>
 #include <rapidjson/document.h>
@@ -160,15 +159,31 @@ labor::conf_read(const string & name) {
 // -----------------------------------------
 vector<string>
 labor::string_split(const string & s, const string & delm)    {
-    vector<string> result;
-    boost::split(result, s, boost::is_any_of(delm));
-    return result;
+    vector<string> output;
+    size_t pos = s.find(delm.c_str());
+    size_t start = 0;
+    while (pos != s.npos)
+    {
+        output.push_back(s.substr(start, pos));
+        start = pos + delm.length();
+        if (start >= s.length()) break;
+        pos = s.find(delm.c_str(), start);
+    }
+    if (start < s.length())
+    {
+        output.push_back(s.substr(start));
+    }
+    return output;
 }
 
 
 void
 labor::string_replace(string & src, const string & old, const string & now)   {
-    boost::replace_all(src, old, now);
+    auto it = src.find(old.c_str());
+    while (it != src.npos)   {
+        src.replace(it, old.length(), now.c_str());
+        it = src.find(old.c_str());
+    }
 }
 
 // For time
