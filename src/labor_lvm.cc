@@ -3,7 +3,6 @@
 #include "labor_def.h"
 #include "labor_utils.h"
 
-#include <fstream>
 #include <unordered_map>
 #include <assert.h>
 
