@@ -93,13 +93,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="labor_aux.cc" />
     <ClCompile Include="labor_connect.cc" />
     <ClCompile Include="labor_event.cc" />
     <ClCompile Include="labor_log.cc" />
+    <ClCompile Include="labor_lua_ext.cc" />
     <ClCompile Include="labor_lvm.cc" />
     <ClCompile Include="labor_main.cc" />
     <ClCompile Include="labor_opt.cc" />
     <ClCompile Include="labor_pvm.cc" />
+    <ClCompile Include="labor_py_ext.cc" />
     <ClCompile Include="labor_request.cc" />
     <ClCompile Include="labor_response.cc" />
     <ClCompile Include="labor_service.cc" />
@@ -107,6 +110,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="labor.h" />
+    <ClInclude Include="labor_aux.h" />
     <ClInclude Include="labor_conf.hpp" />
     <ClInclude Include="labor_connect.h" />
     <ClInclude Include="labor_def.h" />
