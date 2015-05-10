@@ -1,6 +1,10 @@
 #include "labor_aux.h"
 #include <Python.h>
 
+/* ---------------------------
+*  Python helpers
+* ---------------------------*/
+
 
 /* ---------------------------
  *  Python API defined

@@ -13,20 +13,21 @@ namespace labor
     };
 
     // Json library
-    std::string ext_json_encode(const void * jsonptr);
-    void ext_json_decode(const char *str, void ** jsonptr);
+    std::string ext_json_encode(void * jsonptr);
+    void ext_json_decode(const char *str, void * jsonptr);
 
     // Push service
-    void ext_service_init(int type);
+    void * ext_service_init_push(const char * addr);
     void ext_service_push(void * hnd, const char * message);
-    void ext_service_pull(void * hnd);
-    void ext_service_publish(void * hnd, const char * message);
+    void ext_service_publish(const char * message);
 
     // logger library
     void ext_logger_debug(const char * message);
     void ext_logger_info(const char * message);
     void ext_logger_warning(const char * message);
     void ext_logger_error(const char* message);
+
+    /* HTTP client library is comming soon ... */
 }
 
 #endif
