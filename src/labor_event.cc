@@ -25,7 +25,7 @@ class labor::_event_impl
 {
 public:
     _event_impl() :
-        pubsub_(labor::Connector(labor::Connector::PUBSUB)) {}
+        pubsub_(labor::Connector(labor::Connector::PUSHPULL)) {}
 
     void run()
     {
@@ -98,8 +98,6 @@ private:
             LOG_INFO("bind publisher: %s", addr.c_str());
             pubsub_.bind(addr);
         }
-
-        pubsub_.setFilter("{");
 
         for (auto p : packages)
         {

@@ -12,8 +12,8 @@ static int
 _select_socket_type(labor::Connector::ConnectorTypes types)
 {
     // if connector mode is pubsub
-    if (types == labor::Connector::PUBSUB)
-        return ZMQ_SUB;
+    if (types == labor::Connector::PUSHPULL)
+        return ZMQ_PULL;
     else
         return ZMQ_REP;
 }
@@ -44,14 +44,8 @@ public:
 
     void bind(const string & addr)
     {
-        if (this->types_ == labor::Connector::PUBSUB)
+        if (this->types_ == labor::Connector::PUSHPULL)
             socket_.connect(addr.c_str());
-    }
-
-    void setFilter(const string & name)
-    {
-        if (types_ == labor::Connector::PUBSUB)
-            socket_.setsockopt(ZMQ_SUBSCRIBE, name.c_str(), name.length());
     }
 
 private:
@@ -73,13 +67,6 @@ types_(types){ }
 
 labor::Connector::~Connector()
 {}
-
-
-void
-labor::Connector::setFilter(const string & name)
-{
-    connector_->setFilter(name);
-}
 
 
 bool

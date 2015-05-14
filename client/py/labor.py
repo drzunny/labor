@@ -47,21 +47,21 @@ def _normalize_action_name(method):
 # Implementations
 class Labor(object):
 
-    TYPE_PUBSUB = 0
+    TYPE_PUSHPULL = 0
 
     def __init__(self, addr=None, con_type=-1):
         self.addr = None
         self.con_type = None
         self.connection = None
 
-        if not addr or con_type not in (Labor.TYPE_PUBSUB,):
+        if not addr or con_type not in (Labor.TYPE_PUSHPULL,):
             return
         else:
             self.connect(addr, con_type)
 
     def connect(self, addr, con_type):
         assert(addr is not None)
-        if con_type not in (Labor.TYPE_PUBSUB,):
+        if con_type not in (Labor.TYPE_PUSHPULL,):
             raise ValueError("invalid connection type")
 
         self.addr, self.con_type = addr, con_type
@@ -69,8 +69,8 @@ class Labor(object):
         if self.connection:
             self.__disconnect()
 
-        if con_type == Labor.TYPE_PUBSUB:            
-            self.connection = env_zmq_context.socket(zmq.PUB)
+        if con_type == Labor.TYPE_PUSHPULL:            
+            self.connection = env_zmq_context.socket(zmq.PUSH)
             self.connection.sndhwm = 1100000
             self.connection.bind("tcp://%s" % addr)
 
@@ -78,9 +78,9 @@ class Labor(object):
         method = _normalize_action_name(method)
         req = _create_request(method, self.con_type, headers, **kw)
 
-        # if this is a pubsub operation, ignore the return
+        # if this is a PUSHPULL operation, ignore the return
         self.connection.send(b'%s' % req)
-        if self.con_type != Labor.TYPE_PUBSUB:
+        if self.con_type != Labor.TYPE_PUSHPULL:
             ret = self.connection.recv()
             return ret        
 

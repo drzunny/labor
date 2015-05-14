@@ -13,16 +13,15 @@ namespace labor
     public:
         enum PVMType
         {
-            PUBSUB = 0,
-            //REQREP = 1
+            PUSHPULL = 0
         };
 
     public:
         static bool init();
         static void dispose();
-        static void loadModule(const std::string & module, PVMType type = PVMType::PUBSUB);
+        static void loadModule(const std::string & module, PVMType type = PVMType::PUSHPULL);
 
-        static int execute(const std::string & module, const std::string & args = "", PVMType type = PVMType::PUBSUB);
+        static int execute(const std::string & module, const std::string & args = "", PVMType type = PVMType::PUSHPULL);
         static std::string lastError();
 
     private:

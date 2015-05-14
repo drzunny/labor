@@ -208,13 +208,13 @@ _lvm_create_service(const string & key, const string & luafile, string & msg) {
 static int
 _lvm_service_execute(const string & module, const string & args, labor::LVM::LVMType type, string & msg)    {
     string key(module);
-    key.append(type == labor::LVM::PUBSUB ? "_0" : "_1");
+    key.append(type == labor::LVM::PUSHPULL ? "_0" : "_1");
 
     if (s_lua_vm.find(key) == s_lua_vm.end())
     {
         msg = "module `$name` with `$mode` is not found";
         labor::string_replace(msg, "$name", module);
-        labor::string_replace(msg, "$mode", type == labor::LVM::PUBSUB ? "PUBSUB" : "REQREP");
+        labor::string_replace(msg, "$mode", type == labor::LVM::PUSHPULL ? "PUSHPULL" : "REQREP");
         return 404;
     }
 
@@ -293,7 +293,7 @@ labor::LVM::dispose()   {
 void
 labor::LVM::loadModule(const string & module, labor::LVM::LVMType type)    {
     string moduleKey(module);
-    moduleKey.append(type == labor::LVM::PUBSUB ? "_0" : "_1");
+    moduleKey.append(type == labor::LVM::PUSHPULL ? "_0" : "_1");
     if (s_lua_vm.find(moduleKey) != s_lua_vm.end())
     {
         // TODO: Check MD5 for upgrade it

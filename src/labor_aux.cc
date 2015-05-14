@@ -18,6 +18,37 @@ using namespace rapidjson;
 *  Helper functions and properties
 * -------------------------------------*/
 static zmq::socket_t * s_vm_publisher = NULL;
+static unordered_map<string, zmq::socket_t> s_vm_pusher;
+
+struct _lru_sockets
+{
+    string addr;
+    zmq::socket_t * socket;
+
+    _lru_sockets() : addr(""), socket(NULL) {}
+};
+static _lru_sockets s_lru_sockets[LABOR_MAX_PUSHER];
+static int s_lru_cursor = 0;
+static bool s_lru_full = false;
+
+static void
+_lru_sock_add(const char * addr)    {
+
+}
+
+static int
+_lru_sock_find(const char * addr) {
+    int now = s_lru_cursor, end = s_lru_full ? (s_lru_cursor+1) % LABOR_MAX_PUSHER : -1;
+    do
+    {
+        if (now < 0) now = LABOR_MAX_PUSHER + now;
+        auto & s = s_lru_sockets[now];
+        if (s.addr.compare(addr) == 0)
+            return now;
+        now--;
+    } while (now != end);
+    return -1;
+}
 
 
 /* -------------------------------------
@@ -44,6 +75,7 @@ labor::ext_json_decode(const char * str, void * jsonptr)   {
 void *
 labor::ext_service_init_push(const char * addr)   {
     // TODO: create a push service in a LRU list;
+    return NULL;
 }
 
 
@@ -57,9 +89,16 @@ labor::ext_service_publish(const char * message)    {
 
 
 void
-labor::ext_service_push(void * hnd, const char * message)   {
-    zmq::socket_t * s = (zmq::socket_t*)hnd;
-    s_send(*s, message);
+labor::ext_service_push(const char * addr, const char * message)   {
+    zmq::socket_t * pusher = NULL;
+    if (s_vm_pusher.find(addr) == s_vm_pusher.end())
+    {        
+    }
+    else
+    {
+        pusher = &s_vm_pusher[addr];
+    }
+    s_send(*pusher, message);
 }
 
 

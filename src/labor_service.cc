@@ -109,12 +109,10 @@ labor::Service::addHandler(const string & name)    {
     switch (lang)
     {
     case (int)labor::Service::Python:
-        labor::PVM::loadModule(name, labor::PVM::PUBSUB);
-        //labor::PVM::loadModule(name, labor::PVM::REQREP);
+        labor::PVM::loadModule(name, labor::PVM::PUSHPULL);
         return true;
     case (int)labor::Service::Lua:
-        labor::LVM::loadModule(name, labor::LVM::PUBSUB);
-        //labor::LVM::loadModule(name, labor::LVM::REQREP);
+        labor::LVM::loadModule(name, labor::LVM::PUSHPULL);
         return true;
     default:
         LOG_ERROR("unknown lang?");

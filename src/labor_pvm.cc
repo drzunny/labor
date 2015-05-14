@@ -206,7 +206,7 @@ _pvm_error_string(string & msg) {
 static int
 _pvm_service_exec(const string & module, labor::PVM::PVMType type, const string & args, string & msg)    {
     string moduleKey(module);
-    moduleKey.append(type == labor::PVM::PUBSUB ? "_0" : "_1");
+    moduleKey.append(type == labor::PVM::PUSHPULL ? "_0" : "_1");
     if (s_pvm_module.find(moduleKey) == s_pvm_module.end())
     {
         msg = "not found";
@@ -220,7 +220,7 @@ _pvm_service_exec(const string & module, labor::PVM::PVMType type, const string 
     __XDECRREF(vars);
     if (ret != NULL)
     {
-        if (type != labor::PVM::PUBSUB)
+        if (type != labor::PVM::PUSHPULL)
         {
             // TODO: response
         }
@@ -281,7 +281,7 @@ labor::PVM::dispose()   {
 void
 labor::PVM::loadModule(const string & module, labor::PVM::PVMType type)  {
     string moduleKey(module);
-    moduleKey.append(type == labor::PVM::PUBSUB ? "_0" : "_1");
+    moduleKey.append(type == labor::PVM::PUSHPULL ? "_0" : "_1");
     if (s_pvm_module.find(moduleKey) != s_pvm_module.end())
     {
         // TODO: Check MD5 for upgrade it
@@ -304,7 +304,7 @@ labor::PVM::loadModule(const string & module, labor::PVM::PVMType type)  {
         LOG_INFO("Load module %s fail", module.c_str());
         return;
     }
-    if (type == labor::PVM::PVMType::PUBSUB)
+    if (type == labor::PVM::PVMType::PUSHPULL)
     {
         method = PyObject_GetAttrString(pymodule, "subscript");
     }

@@ -3,6 +3,8 @@
 
 #include <string>
 
+#define LABOR_MAX_PUSHER 32
+
 namespace labor
 {
     enum EServiceType
@@ -18,7 +20,7 @@ namespace labor
 
     // Push service
     void * ext_service_init_push(const char * addr);
-    void ext_service_push(void * hnd, const char * message);
+    void ext_service_push(const char * addr, const char * message);
     void ext_service_publish(const char * message);
 
     // logger library
