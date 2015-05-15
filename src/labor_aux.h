@@ -19,7 +19,6 @@ namespace labor
     void ext_json_decode(const char *str, void * jsonptr);
 
     // Push service
-    void * ext_service_init_push(const char * addr);
     void ext_service_push(const char * addr, const char * message);
     void ext_service_publish(const char * message);
 

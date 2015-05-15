@@ -39,7 +39,8 @@ static shared_ptr<labor::Conf> s_conf_properties = shared_ptr<labor::Conf>();
 static void
 _default_conf_assignment()  {    
     // labor main section
-    s_conf_properties->set("labor.pubsub_addr", "127.0.0.1:1808");
+    s_conf_properties->set("labor.address", "127.0.0.1:1808");
+    s_conf_properties->set("labor.publish_addr", "*:5606");
     // service section
     s_conf_properties->set("services.service_path", "@LABOR_ROOT/services");
     // logger section

@@ -67,7 +67,7 @@ private:
 
     vector<string> _readPubsubAddrs() {
         vector<string> addrs;
-        auto addrString = labor::conf_read("labor.pubsub_addr");
+        auto addrString = labor::conf_read("labor.address");
 
         if (addrString.find(";") >= 0)
         {

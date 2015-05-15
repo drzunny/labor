@@ -18,6 +18,8 @@ _select_socket_type(labor::Connector::ConnectorTypes types)
         return ZMQ_REP;
 }
 
+zmq::context_t s_mq_context(1);
+
 /* ------------------------------------
 * The PIMPL
 * ------------------------------------
@@ -26,9 +28,8 @@ class labor::_connector_impl
 {
 public:
     _connector_impl(labor::Connector::ConnectorTypes types) :
-        ctx_(zmq::context_t(1)),
         types_(types),
-        socket_(zmq::socket_t(ctx_, _select_socket_type(types)))
+        socket_(zmq::socket_t(s_mq_context, _select_socket_type(types)))
     {
     }
 
@@ -49,7 +50,6 @@ public:
     }
 
 private:
-    zmq::context_t ctx_;
     zmq::socket_t socket_;
     labor::Connector::ConnectorTypes types_;
 };

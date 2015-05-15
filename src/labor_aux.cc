@@ -1,9 +1,11 @@
 #include "labor_aux.h"
 #include "labor_log.h"
 #include "labor_def.h"
+#include "labor_utils.h"
 
 #include <string.h>
 #include <unordered_map>
+#include <memory>
 
 #include <zmq.hpp>
 #include <zhelpers.hpp>
@@ -17,13 +19,14 @@ using namespace rapidjson;
 /* -------------------------------------
 *  Helper functions and properties
 * -------------------------------------*/
+static zmq::context_t s_mq_context(1);
 static zmq::socket_t * s_vm_publisher = NULL;
-static unordered_map<string, zmq::socket_t> s_vm_pusher;
+static unordered_map<string, weak_ptr<zmq::socket_t> > s_lru_reference;
 
 struct _lru_sockets
 {
     string addr;
-    zmq::socket_t * socket;
+    shared_ptr<zmq::socket_t> socket;
 
     _lru_sockets() : addr(""), socket(NULL) {}
 };
@@ -31,23 +34,29 @@ static _lru_sockets s_lru_sockets[LABOR_MAX_PUSHER];
 static int s_lru_cursor = 0;
 static bool s_lru_full = false;
 
-static void
+static shared_ptr<zmq::socket_t>
 _lru_sock_add(const char * addr)    {
+    shared_ptr<zmq::socket_t> s(NULL);
 
-}
-
-static int
-_lru_sock_find(const char * addr) {
-    int now = s_lru_cursor, end = s_lru_full ? (s_lru_cursor+1) % LABOR_MAX_PUSHER : -1;
-    do
+    if (s_lru_reference.find(addr) != s_lru_reference.end() && !s_lru_reference[addr].expired())
     {
-        if (now < 0) now = LABOR_MAX_PUSHER + now;
-        auto & s = s_lru_sockets[now];
-        if (s.addr.compare(addr) == 0)
-            return now;
-        now--;
-    } while (now != end);
-    return -1;
+        s = s_lru_reference[addr].lock();
+    }
+    else
+    {
+        s = shared_ptr<zmq::socket_t>(new zmq::socket_t(s_mq_context, ZMQ_PUSH));
+        s_lru_reference[addr] = s;
+    }
+    s_lru_sockets[s_lru_cursor].addr = addr;
+    s_lru_sockets[s_lru_cursor].socket = s;
+
+    s_lru_cursor = (s_lru_cursor + 1) % LABOR_MAX_PUSHER;
+    if (!s_lru_full && s_lru_cursor == LABOR_MAX_PUSHER - 1)
+    {
+        s_lru_full = true;
+    }
+
+    return s;
 }
 
 
@@ -72,33 +81,20 @@ labor::ext_json_decode(const char * str, void * jsonptr)   {
 }
 
 
-void *
-labor::ext_service_init_push(const char * addr)   {
-    // TODO: create a push service in a LRU list;
-    return NULL;
-}
-
-
 void
 labor::ext_service_publish(const char * message)    {
     if (s_vm_publisher == NULL)    {
-
-    }    
+        s_vm_publisher = new zmq::socket_t(s_mq_context, ZMQ_PUB);
+        s_vm_publisher->bind(labor::conf_read("labor.publish_addr").c_str());
+    }
     s_send(*s_vm_publisher, message);
 }
 
 
 void
 labor::ext_service_push(const char * addr, const char * message)   {
-    zmq::socket_t * pusher = NULL;
-    if (s_vm_pusher.find(addr) == s_vm_pusher.end())
-    {        
-    }
-    else
-    {
-        pusher = &s_vm_pusher[addr];
-    }
-    s_send(*pusher, message);
+    auto socket = _lru_sock_add(addr);
+    s_send(*(socket.get()), message);
 }
 
 
@@ -110,7 +106,7 @@ void
 labor::ext_logger_info(const char * message)    { LOG_INFO(message); }
 
 
-void 
+void
 labor::ext_logger_warning(const char * message) { LOG_WARNING(message); }
 
 
