@@ -51,10 +51,7 @@
     <ClCompile Include="labor_aux.cc">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="labor_lua_ext.cc">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="labor_py_ext.cc">
+    <ClCompile Include="labor_ext.cc">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
@@ -99,6 +96,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="labor_aux.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="labor_ext.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

@@ -2,6 +2,7 @@
 #include "labor_log.h"
 #include "labor_def.h"
 #include "labor_utils.h"
+#include "labor_ext.h"
 
 #include <unordered_map>
 #include <assert.h>
@@ -178,10 +179,12 @@ _lvm_create_service(const string & key, const string & luafile, string & msg) {
     luaL_openlibs(vm);
 
     // Change the lua vm package search path
-    string working = luafile;
-    // luafile = '$working/init.lua'
+    string working = luafile;    
     labor::string_replace(working, "init.lua", "");
     _lvm_package_path(vm, std::move(working));
+
+    // setup the extension function per vm
+    labor::Extension::luaRegister(vm);
 
     // add `traceback` function in vm stack as the first element
     // to get all stack traceback, you must put traceback into stack,

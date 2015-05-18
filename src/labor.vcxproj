@@ -96,13 +96,12 @@
     <ClCompile Include="labor_aux.cc" />
     <ClCompile Include="labor_connect.cc" />
     <ClCompile Include="labor_event.cc" />
+    <ClCompile Include="labor_ext.cc" />
     <ClCompile Include="labor_log.cc" />
-    <ClCompile Include="labor_lua_ext.cc" />
     <ClCompile Include="labor_lvm.cc" />
     <ClCompile Include="labor_main.cc" />
     <ClCompile Include="labor_opt.cc" />
     <ClCompile Include="labor_pvm.cc" />
-    <ClCompile Include="labor_py_ext.cc" />
     <ClCompile Include="labor_request.cc" />
     <ClCompile Include="labor_response.cc" />
     <ClCompile Include="labor_service.cc" />
@@ -115,6 +114,7 @@
     <ClInclude Include="labor_connect.h" />
     <ClInclude Include="labor_def.h" />
     <ClInclude Include="labor_event.h" />
+    <ClInclude Include="labor_ext.h" />
     <ClInclude Include="labor_log.h" />
     <ClInclude Include="labor_lvm.h" />
     <ClInclude Include="labor_opt.h" />
