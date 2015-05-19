@@ -233,6 +233,108 @@ l_log_debug(lua_State * L) {
 //  Python extension here
 // ----------------------------------
 
+static void
+s_lookup_py_dict(PyObject * dict, Value * v)    {
+    return;
+}
+
+
+static PyObject *
+s_to_py_dict(Value * v)   {
+    return NULL;
+}
+
+
+static PyObject*
+p_json_encode(PyObject * self, PyObject * args) {
+    PyObject * dict;
+    if (PyArg_ParseTuple(args, "O!", &PyDict_Type, &dict))
+        return NULL;
+
+    Document d;
+    s_lookup_py_dict(dict, &d);
+    return Py_BuildValue("s", labor::ext_json_encode(&d).c_str());
+}
+
+static PyObject*
+p_json_decode(PyObject * self, PyObject * args) {
+    const char * json;
+    PyObject * dict;
+    if (PyArg_ParseTuple(args, "s", &json))
+        return NULL;
+    Document d;
+    labor::ext_json_decode(json, (void*)&d);
+    PyObject * dict = s_to_py_dict(&d);
+
+    return dict;
+}
+
+
+static PyObject*
+p_service_push(PyObject * self, PyObject * args) {
+    const char *addr, *message;
+    if (PyArg_ParseTuple(args, "ss", &addr, &message))
+        labor::ext_service_push(addr, message);
+    Py_RETURN_NONE;
+}
+
+
+static PyObject*
+p_service_publish(PyObject * self, PyObject * args) {
+    const char *message;
+    if (PyArg_ParseTuple(args, "s", &message))
+        labor::ext_service_publish(message);
+    Py_RETURN_NONE;
+}
+
+
+static PyObject*
+p_log_debug(PyObject * self, PyObject * args) {
+    const char * str = NULL;
+    if (!PyArg_ParseTuple(args, "s", &str))
+    {
+        return NULL;
+    }
+    labor::ext_logger_debug(str);
+    Py_RETURN_NONE;
+}
+
+
+static PyObject*
+p_log_info(PyObject * self, PyObject * args) {
+    const char * str = NULL;
+    if (!PyArg_ParseTuple(args, "s", &str))
+    {
+        return NULL;
+    }
+    labor::ext_logger_info(str);
+    Py_RETURN_NONE;
+}
+
+
+static PyObject*
+p_log_warning(PyObject * self, PyObject * args) {
+    const char * str = NULL;
+    if (!PyArg_ParseTuple(args, "s", &str))
+    {
+        return NULL;
+    }
+    labor::ext_logger_warning(str);
+    Py_RETURN_NONE;
+}
+
+
+static PyObject*
+p_log_error(PyObject * self, PyObject * args) {
+    const char * str = NULL;
+    if (!PyArg_ParseTuple(args, "s", &str))
+    {
+        return NULL;
+    }
+    labor::ext_logger_error(str);
+    Py_RETURN_NONE;
+}
+
 
 // ----------------------------------
 //  Register here
@@ -249,14 +351,13 @@ labor::Extension::luaRegister(lua_State * vm)   {
         { "debug", l_log_debug },
         { "info", l_log_info },
         { "warning", l_log_warning },
+        { "error", l_log_error },
         // Json functions
-        { "jsonEncode", l_json_decode },
+        { "jsonEncode", l_json_encode },
         { "jsonDecode", l_json_decode },
         // Service functions
         { "publish", l_service_publish },
         { "push", l_service_push },
-
-        { "error", l_log_error },
         { NULL, NULL }
     };
 
@@ -269,5 +370,22 @@ void
 labor::Extension::pyRegister()  {
     if (s_py_initialize)
         return;
+
+    static PyMethodDef modules[] = {
+        // Logger functions
+        { "debug", p_log_debug, METH_VARARGS, "use labor's debug logger" },
+        { "info", p_log_info, METH_VARARGS, "use labor's info logger" },
+        { "warning", p_log_warning, METH_VARARGS, "use labor's warning logger" },
+        { "error", p_log_error, METH_VARARGS, "use labor's error logger" },
+        // Json functions
+        { "json_encode", p_json_encode, METH_VARARGS, "json encoder" },
+        { "json_decode", p_json_decode, METH_VARARGS, "json decoder" },
+        // Service functions
+        { "publish", p_service_publish, METH_VARARGS, "publish a message" },
+        { "push", p_service_push, METH_VARARGS, "push a message" },
+        {NULL, NULL, 0, NULL}
+    };
+
+    Py_InitModule("LABOR", modules);
     s_py_initialize = true;
 }
