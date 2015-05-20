@@ -66,7 +66,7 @@ s_get_lua_value(lua_State * L, Value & v, Document::AllocatorType& alloc, const 
             if (!key) v.PushBack(Value(rapidjson::kNullType), alloc);
             else v[key].SetNull();
         }
-    }    
+    }
 }
 
 
@@ -117,7 +117,7 @@ s_parse_lua_table(lua_State * L, Value * v)  {
                 s_push_lua_value(L, d[i], i + 1);
             }
             else
-            {                
+            {
                 s_parse_lua_table(L, &d[i]);
                 lua_rawseti(L, -2, i + 1);
             }
@@ -233,114 +233,6 @@ l_log_debug(lua_State * L) {
 //  Python extension here
 // ----------------------------------
 
-#define _PY_TO_JSON(json, key, v) \
-        if ((key) == NULL) { (json).PushBack((v), alloc); }\
-        else { (json)[key] = v; }
-
-static bool
-s_get_py_value(PyObject * item, Value & v, Document::AllocatorType& alloc, bool isArray=false)
-{
-    const char * key = isArray ? NULL : PyString_AsString(PyList_GetItem(item, 0));
-    PyObject * val = isArray ? item : PyList_GetItem(item, 1);
-
-    // if this is a complex object, expand it
-    if (PyList_Check(val) || PyTuple_Check(val) || PyDict_Check(val))
-        return false;
-
-    if (PyInt_Check(val)) { _PY_TO_JSON(v, key, PyInt_AsLong(val)); }
-    else if (PyLong_Check(val)) { _PY_TO_JSON(v, key, PyLong_AsLongLong(item)); }
-    else if (PyString_Check(val)) { _PY_TO_JSON(v, key, StringRef(PyString_AsString(item))); }
-    else if (PyFloat_Check(val)) { _PY_TO_JSON(v, key, PyFloat_AsDouble(item)); }
-    else if (PyBool_Check(val)) { _PY_TO_JSON(v, key, item == Py_True); }
-
-    return true;
-}
-
-
-static void
-s_set_py_value(PyObject * val, Value & v)   {
-
-}
-
-
-static void
-s_lookup_py_object(PyObject * obj, Value * v, Document::AllocatorType& alloc)    {
-    Value & d = *v;
-    if (PyDict_Check(obj))
-    {
-        d.SetObject();
-
-        PyObject * kvItems = PyDict_Items(obj);
-        auto n = PyList_Size(kvItems);
-        if (n >= 0)
-        {
-            for (int i = 0; i < n; i++)
-            {
-                auto item = PyList_GetItem(kvItems, i);
-
-                // if s_set_py_value return false, means that current value is `array` or `dict`
-                if (!s_get_py_value(item, d, alloc))
-                {
-                    PyObject * key = PyList_GetItem(item, 0);
-                    Value v;
-                    s_lookup_py_object(PyList_GetItem(item, 1), &v, alloc);
-                    d[PyString_AsString(key)] = v;
-                }
-            }
-        }
-        Py_DECREF(kvItems);
-    }
-    else if (PyList_Check(obj) && PyList_Size(obj) > 0)
-    {
-        d.SetArray();
-        auto n = PyList_Size(obj);
-        for (int i = 0; i < n; i++)
-        {
-            auto item = PyList_GetItem(obj, i);
-            if (!s_get_py_value(item, d, alloc, i))
-            {
-                Value v;
-                s_lookup_py_object(item, &v, alloc);
-
-                d.PushBack(v, alloc);
-            }
-        }
-    }
-    return;
-}
-
-
-static PyObject *
-s_to_py_object(Value * v)   {
-    return NULL;
-}
-
-
-static PyObject*
-p_json_encode(PyObject * self, PyObject * args) {
-    PyObject * dict;
-    if (PyArg_ParseTuple(args, "O!", &PyDict_Type, &dict))
-        return NULL;
-
-    Document d;
-    s_lookup_py_object(dict, &d, d.GetAllocator());
-    return Py_BuildValue("s", labor::ext_json_encode(&d).c_str());
-}
-
-static PyObject*
-p_json_decode(PyObject * self, PyObject * args) {
-    const char * json;
-    PyObject * dict;
-    if (PyArg_ParseTuple(args, "s", &json))
-        return NULL;
-    Document d;
-    labor::ext_json_decode(json, (void*)&d);
-    PyObject * dict = s_to_py_object(&d);
-
-    return dict;
-}
-
-
 static PyObject*
 p_service_push(PyObject * self, PyObject * args) {
     const char *addr, *message;
@@ -442,21 +334,19 @@ labor::Extension::pyRegister()  {
     if (s_py_initialize)
         return;
 
+    // Python has its own json parser, so we dont provide json api
     static PyMethodDef modules[] = {
         // Logger functions
         { "debug", p_log_debug, METH_VARARGS, "use labor's debug logger" },
         { "info", p_log_info, METH_VARARGS, "use labor's info logger" },
         { "warning", p_log_warning, METH_VARARGS, "use labor's warning logger" },
         { "error", p_log_error, METH_VARARGS, "use labor's error logger" },
-        // Json functions
-        { "json_encode", p_json_encode, METH_VARARGS, "json encoder" },
-        { "json_decode", p_json_decode, METH_VARARGS, "json decoder" },
         // Service functions
         { "publish", p_service_publish, METH_VARARGS, "publish a message" },
         { "push", p_service_push, METH_VARARGS, "push a message" },
-        {NULL, NULL, 0, NULL}
+        { NULL, NULL, 0, NULL }
     };
 
-    Py_InitModule("LABOR", modules);
+    Py_InitModule3("LABOR", modules, "Provide internal api for labor");
     s_py_initialize = true;
 }
