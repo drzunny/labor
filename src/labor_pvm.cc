@@ -62,7 +62,7 @@ _pvm_build_args(const char * module, const char * args, const char * header, con
             goto SETUP_LOADER;
         s_pvm_json = PyImport_ImportModule("json");
 
-SETUP_LOADER:
+    SETUP_LOADER:
         s_pvm_jsonload = PyObject_GetAttrString(s_pvm_json, "loads");
     }
 
@@ -128,7 +128,7 @@ _pvm_error_traceback(PyObject * trace, long * limit, string * msg)    {
     if (limitObj && PyInt_Check(limitObj))
     {
         *limit = PyInt_AsLong(limitObj);
-        if ( *limit <= 0)
+        if (*limit <= 0)
             return -2;
     }
     (*msg).append("\n");
@@ -263,7 +263,7 @@ labor::PVM::init()  {
         // So labor cannot import the services
         PyRun_SimpleString("import sys\nsys.path.append('.')");
 #endif
-        labor::Extension::pyRegister();
+        //labor::Extension::pyRegister();
     }
     return true;
 }

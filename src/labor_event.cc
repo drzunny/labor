@@ -102,8 +102,6 @@ private:
         for (auto p : packages)
         {
             labor::Service::addHandler(p);
-            // ! No necessary to set filter now
-            //pubsub_.setFilter(p);
         }
     }
 };
