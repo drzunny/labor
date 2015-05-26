@@ -25,7 +25,7 @@ class labor::_event_impl
 {
 public:
     _event_impl() :
-        pubsub_(labor::Connector(labor::Connector::PUSHPULL)) {}
+        pushpull_(labor::Connector(labor::Connector::PUSHPULL)) {}
 
     void run()
     {
@@ -33,7 +33,7 @@ public:
 
         while (true)
         {
-            auto p_msg = pubsub_.recv();
+            auto p_msg = pushpull_.recv();
             if (labor::Request::isValid(p_msg))
             {
                 auto req = labor::Request(__S(p_msg));
@@ -62,42 +62,26 @@ public:
     }
 
 private:
-    labor::Connector pubsub_;
+    labor::Connector pushpull_;
 
 
-    vector<string> _readPubsubAddrs() {
-        vector<string> addrs;
-        auto addrString = labor::conf_read("labor.address");
-
-        if (addrString.find(";") >= 0)
-        {
-            vector<string> _addr = labor::string_split(addrString, ";");
-            for (auto a : _addr)
-                addrs.push_back(string("tcp://") + a);
-        }
-        else
-        {
-            addrs.push_back(string("tcp://") + addrString);
-        }
-        return addrs;
+    inline string _readPubsubAddrs() {
+        return labor::conf_read("labor.address");
     }
 
 
     void _init()
     {
         auto packages = labor::conf_modules();
-        auto pubsub_addrs = this->_readPubsubAddrs();
+        auto pushpull_addrs = string("tcp://") + this->_readPubsubAddrs();
 
         if (packages.size() == 0)   {
             LOG_INFO("no services has been loaded....");
         }
 
         // you can bind multi-addr
-        for (auto addr : pubsub_addrs)
-        {
-            LOG_INFO("bind publisher: %s", addr.c_str());
-            pubsub_.bind(addr);
-        }
+        pushpull_.bind(pushpull_addrs);
+        LOG_INFO("bind service: %s", pushpull_addrs.c_str());
 
         for (auto p : packages)
         {
