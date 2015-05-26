@@ -310,9 +310,6 @@ labor::PVM::loadModule(const string & module, labor::PVM::PVMType type)  {
     {
         method = PyObject_GetAttrString(pymodule, "subscript");
     }
-    else
-    {
-    }
     if (!method)    {
         LOG_INFO("handler not found");
         return;
