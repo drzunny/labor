@@ -263,7 +263,7 @@ labor::PVM::init()  {
         // So labor cannot import the services
         PyRun_SimpleString("import sys\nsys.path.append('.')");
 #endif
-        //labor::Extension::pyRegister();
+        labor::Extension::pyRegister();
     }
     return true;
 }
