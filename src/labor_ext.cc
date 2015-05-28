@@ -1,6 +1,7 @@
 #include "labor_ext.h"
 #include "labor_aux.h"
 #include "labor_utils.h"
+#include "labor_log.h"
 
 #include <string>
 #include <Python.h>
@@ -329,24 +330,32 @@ labor::Extension::luaRegister(lua_State * vm)   {
 }
 
 
+// Python has its own json parser, so we dont provide json api
+static PyMethodDef modules[] = {
+    // Logger functions
+    { "debug", p_log_debug, METH_VARARGS, "use labor's debug logger" },
+    { "info", p_log_info, METH_VARARGS, "use labor's info logger" },
+    { "warning", p_log_warning, METH_VARARGS, "use labor's warning logger" },
+    { "error", p_log_error, METH_VARARGS, "use labor's error logger" },
+    // Service functions
+    { "publish", p_service_publish, METH_VARARGS, "publish a message" },
+    { "push", p_service_push, METH_VARARGS, "push a message" },
+    { NULL, NULL, 0, NULL }
+};
+
+
 void
 labor::Extension::pyRegister()  {
     if (s_py_initialize)
         return;
 
-    // Python has its own json parser, so we dont provide json api
-    static PyMethodDef modules[] = {
-        // Logger functions
-        { "debug", p_log_debug, METH_VARARGS, "use labor's debug logger" },
-        { "info", p_log_info, METH_VARARGS, "use labor's info logger" },
-        { "warning", p_log_warning, METH_VARARGS, "use labor's warning logger" },
-        { "error", p_log_error, METH_VARARGS, "use labor's error logger" },
-        // Service functions
-        { "publish", p_service_publish, METH_VARARGS, "publish a message" },
-        { "push", p_service_push, METH_VARARGS, "push a message" },
-        { NULL, NULL, 0, NULL }
-    };
-
-    Py_InitModule3("LABOR", modules, "Provide internal api for labor");
-    s_py_initialize = true;
+    if (Py_IsInitialized()) 
+    {        
+        Py_InitModule3("LABOR", modules, "Provide internal api for labor");
+        s_py_initialize = true;
+    }
+    else
+    {
+        LOG_WARNING("Python extension disabled -- Python is not ready");
+    }
 }

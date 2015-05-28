@@ -262,7 +262,7 @@ labor::PVM::init()  {
         // On Linux, sys.path is missing current directory(`.`)
         // So labor cannot import the services
         PyRun_SimpleString("import sys\nsys.path.append('.')");
-#endif
+#endif        
         labor::Extension::pyRegister();
     }
     return true;

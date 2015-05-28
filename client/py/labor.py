@@ -83,7 +83,7 @@ class Labor(object):
         if con_type == Labor.TYPE_PUSHPULL:            
             self.connection = env_zmq_context.socket(zmq.PUSH)
             self.connection.sndhwm = 1100000
-            self.connection.bind("tcp://%s" % addr)
+            self.connection.connect("tcp://%s" % addr)
 
     def use(self, method, headers={}, **kw):
         method = _normalize_action_name(method)

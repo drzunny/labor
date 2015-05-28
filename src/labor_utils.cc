@@ -39,12 +39,12 @@ static shared_ptr<labor::Conf> s_conf_properties = shared_ptr<labor::Conf>();
 static void
 _default_conf_assignment()  {    
     // labor main section
-    s_conf_properties->set("labor.address", "127.0.0.1:1808");
+    s_conf_properties->set("labor.address", "*:1808");
     s_conf_properties->set("labor.publish_addr", "*:5606");
     // service section
-    s_conf_properties->set("services.service_path", "@LABOR_ROOT/services");
+    s_conf_properties->set("services.service_path", labor::Options::laborRoot() + "/services");
     // logger section
-    s_conf_properties->set("log.file_path", "@LABOR_ROOT/log/");
+    s_conf_properties->set("log.file_path", labor::Options::laborRoot() + "/log/");
     s_conf_properties->set("log.format", "$level>>$file|$line|$datetime| $text");
     s_conf_properties->set("log.file_size", "10");
     s_conf_properties->set("log.enable_stdout", "1");

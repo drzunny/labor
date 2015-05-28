@@ -7,8 +7,8 @@ if __name__ == '__main__':
     if len(sys.argv) > 1:
         addr = sys.argv[1]
     else:
-        addr = '*:1808'
-    lb = Labor(addr, Labor.TYPE_PUBSUB)
+        addr = '127.0.0.1:1808'
+    lb = Labor(addr, Labor.TYPE_PUSHPULL)
     time.sleep(1)
     print 'Start...'
     t = time.time()

@@ -76,7 +76,7 @@ private:
         auto pushpull_addrs = string("tcp://") + this->_readPubsubAddrs();
 
         if (packages.size() == 0)   {
-            LOG_INFO("no services has been loaded....");
+            LOG_WARNING("no services has been loaded....");
         }
 
         // you can bind multi-addr
