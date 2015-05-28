@@ -263,7 +263,7 @@ labor::PVM::init()  {
         // So labor cannot import the services
         PyRun_SimpleString("import sys\nsys.path.append('.')");
 #endif
-        //labor::Extension::pyRegister();
+        labor::Extension::pyRegister();
     }
     return true;
 }
@@ -309,9 +309,6 @@ labor::PVM::loadModule(const string & module, labor::PVM::PVMType type)  {
     if (type == labor::PVM::PVMType::PUSHPULL)
     {
         method = PyObject_GetAttrString(pymodule, "subscript");
-    }
-    else
-    {
     }
     if (!method)    {
         LOG_INFO("handler not found");

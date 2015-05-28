@@ -102,7 +102,7 @@ labor::Service::addHandler(const string & name)    {
     int lang = _service_check_lang(name.c_str());
     if (lang == -2)
     {
-        LOG_ERROR("module `%s` is ignore.", name.c_str());
+        LOG_WARNING("module `%s` is ignore.", name.c_str());
         return false;
     }
     LOG_INFO("try to load module `%s`", name.c_str());

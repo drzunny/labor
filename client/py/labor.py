@@ -14,6 +14,7 @@ except ImportError:
         import json
 
 import re
+import thread
 
 
 # This client's env
@@ -44,6 +45,14 @@ def _normalize_action_name(method):
         raise ValueError('invalid method name: %s' % method)
 
 
+class SocketReuseError(Exception):
+	pass
+
+
+def _check_client_reuse(thread_id):
+	if thread_id != thread.get_ident():
+		raise SocketReuseError
+
 # Implementations
 class Labor(object):
 
@@ -53,6 +62,7 @@ class Labor(object):
         self.addr = None
         self.con_type = None
         self.connection = None
+        self.thread_id = thread.get_ident()
 
         if not addr or con_type not in (Labor.TYPE_PUSHPULL,):
             return
@@ -61,6 +71,7 @@ class Labor(object):
 
     def connect(self, addr, con_type):
         assert(addr is not None)
+        _check_client_reuse(self.thread_id)
         if con_type not in (Labor.TYPE_PUSHPULL,):
             raise ValueError("invalid connection type")
 
@@ -76,6 +87,7 @@ class Labor(object):
 
     def use(self, method, headers={}, **kw):
         method = _normalize_action_name(method)
+        _check_client_reuse(self.thread_id)
         req = _create_request(method, self.con_type, headers, **kw)
 
         # if this is a PUSHPULL operation, ignore the return
@@ -85,11 +97,13 @@ class Labor(object):
             return ret        
 
     def __disconnect(self):
+    	_check_client_reuse(self.thread_id)
         if self.connection:
             self.connection.disconnect('tcp://%s' % self.addr)
             self.addr, self.con_type = None, None
 
     def __del__(self):
+    	_check_client_reuse(self.thread_id)
         self.__disconnect()
         del self.addr
         del self.con_type

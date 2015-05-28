@@ -8,16 +8,6 @@ using namespace std;
 * The Helper Functions
 * ------------------------------------
 */
-static int
-_select_socket_type(labor::Connector::ConnectorTypes types)
-{
-    // if connector mode is pubsub
-    if (types == labor::Connector::PUSHPULL)
-        return ZMQ_PULL;
-    else
-        return ZMQ_REP;
-}
-
 zmq::context_t s_mq_context(1);
 
 /* ------------------------------------
@@ -29,7 +19,7 @@ class labor::_connector_impl
 public:
     _connector_impl(labor::Connector::ConnectorTypes types) :
         types_(types),
-        socket_(zmq::socket_t(s_mq_context, _select_socket_type(types)))
+        socket_(zmq::socket_t(s_mq_context, ZMQ_PULL))
     {
     }
 
@@ -46,7 +36,7 @@ public:
     void bind(const string & addr)
     {
         if (this->types_ == labor::Connector::PUSHPULL)
-            socket_.connect(addr.c_str());
+            socket_.bind(addr.c_str());
     }
 
 private:
