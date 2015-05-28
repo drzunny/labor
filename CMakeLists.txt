@@ -17,7 +17,7 @@ if(WIN32)
     set(labor_depends libzmq.lib pthread.lib python27_d.lib python27.lib lua.lib)
 
     # set debug's options
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DLABOR_DEBUG -DPy_REF_DEBUG /MTd")
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DLABOR_DEBUG /MTd")
     # set release options
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT")
 
