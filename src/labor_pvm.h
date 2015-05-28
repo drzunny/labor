@@ -3,7 +3,6 @@
 
 #include <string>
 #include <memory>
-#include <Python.h>
 
 namespace labor
 {
