@@ -39,9 +39,9 @@ Install `lua`, `lua-devel`, `python`, `python-devel`, `zeromq3`, `zeromq3-devel`
 # How to use
 - - -
 
-> ### Server/Service
+### Server/Service
 
-labor --conf='you conf file' <other options>
+> labor --conf='you conf file' <other options>
 
 ## Other Options:
 
