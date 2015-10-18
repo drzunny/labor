@@ -1,7 +1,7 @@
 # About labor
 ---
 
-**larbo** is a lightweight job service, it try to be as little as possible to influence your server's performance. :)
+**labor** is a lightweight job service, it try to be as little as possible to influence your server's performance. :)
 
 
 # Build
