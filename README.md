@@ -1,7 +1,7 @@
 # About labor
 ---
 
-**I think** labor is a lightweight job scheduler service, it try to be as little as possible to influence your server's performance. :)
+**larbo** is a lightweight job service, it try to be as little as possible to influence your server's performance. :)
 
 
 # Build
@@ -74,7 +74,7 @@ Here is the Demo:
 
     from labor import Labor
 
-    lb = Labor("127.0.0.1:1808", Labor.TYPE_PUBSUB)
+    lb = Labor("127.0.0.1:1808")
 
     # call service registered in labor
     # these operation is non-blocking.
