@@ -77,7 +77,6 @@ Here is the Demo:
     lb = Labor("127.0.0.1:1808")
 
     # call service registered in labor
-    # these operation is non-blocking.
     lb.use('sendEmailMethod', addr='helloworld@123.com', title='title', text='hi')
     lb.use('httpRequest', url='http://127.0.0.1')
     lb.use('echo')
