@@ -1,7 +1,7 @@
 # About labor
 ---
 
-**I think** labor is a lightweight job scheduler service, it try to be as little as possible to influence your server's performance. :)
+**labor** is a lightweight job service, it try to be as little as possible to influence your server's performance. :)
 
 
 # Build
@@ -78,8 +78,8 @@ Here is the Demo:
 
     # call service registered in labor
     # these operation is non-blocking.
-    lb.use('sendEmailMethod', 'helloworld@123.com', 'title', 'fuck')
-    lb.use('httpRequest', 'http://127.0.0.1')
+    lb.use('sendEmailMethod', addr='helloworld@123.com', title='title', text='hi')
+    lb.use('httpRequest', url='http://127.0.0.1')
     lb.use('echo')
 
 ```
