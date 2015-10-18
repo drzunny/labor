@@ -17,7 +17,7 @@ namespace labor
         Response(const std::string & action, int code);
         ~Response();
 
-        void setHeader(const std::string & name, const std::string & val); 
+        void setHeader(const std::string & name, const std::string & val);
         void setBody(const std::string & body);
         void send(const ConnectorRef & con);
 

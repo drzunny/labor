@@ -27,7 +27,7 @@ _labor_running_mode()   {
 static bool
 _labor_prepare(int argc, char * argv[])    {
     bool ok = true;
-    
+
     // The logger::init must be the first. `cwd` will be changed after this;
     LABOR_OPERATION_START(labor::Logger::init());
     LABOR_OPERATION_START(labor::Service::setEnv());
@@ -36,7 +36,7 @@ _labor_prepare(int argc, char * argv[])    {
     }
     if (labor::Options::enableLua())    {
         LABOR_OPERATION_START(labor::LVM::init());
-    }    
+    }
 
         printf("\nlabor.conf's path:      \"%s\"\nrunning mode:           \"%s\"\nlog directory:          \"%s\"\n\n",
         labor::Options::configFile().c_str(), _labor_running_mode(), labor::Logger::filePath().c_str());

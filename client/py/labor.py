@@ -56,34 +56,26 @@ def _check_client_reuse(thread_id):
 # Implementations
 class Labor(object):
 
-    TYPE_PUSHPULL = 0
-
-    def __init__(self, addr=None, con_type=-1):
+    def __init__(self, addr=None):
         self.addr = None
         self.con_type = None
         self.connection = None
         self.thread_id = thread.get_ident()
 
-        if not addr or con_type not in (Labor.TYPE_PUSHPULL,):
-            return
-        else:
-            self.connect(addr, con_type)
+        self.connect(addr)
 
     def connect(self, addr, con_type):
         assert(addr is not None)
         _check_client_reuse(self.thread_id)
-        if con_type not in (Labor.TYPE_PUSHPULL,):
-            raise ValueError("invalid connection type")
 
         self.addr, self.con_type = addr, con_type
         # auto disconnect if using a same instance
         if self.connection:
-            self.__disconnect()
+            self._disconnect()
 
-        if con_type == Labor.TYPE_PUSHPULL:            
-            self.connection = env_zmq_context.socket(zmq.PUSH)
-            self.connection.sndhwm = 1100000
-            self.connection.connect("tcp://%s" % addr)
+        self.connection = env_zmq_context.socket(zmq.PUSH)
+        self.connection.sndhwm = 1100000
+        self.connection.connect("tcp://%s" % addr)
 
     def use(self, method, headers={}, **kw):
         method = _normalize_action_name(method)
@@ -94,9 +86,9 @@ class Labor(object):
         self.connection.send(b'%s' % req)
         if self.con_type != Labor.TYPE_PUSHPULL:
             ret = self.connection.recv()
-            return ret        
+            return ret
 
-    def __disconnect(self):
+    def _disconnect(self):
     	_check_client_reuse(self.thread_id)
         if self.connection:
             self.connection.disconnect('tcp://%s' % self.addr)
@@ -104,6 +96,6 @@ class Labor(object):
 
     def __del__(self):
     	_check_client_reuse(self.thread_id)
-        self.__disconnect()
+        self._disconnect()
         del self.addr
         del self.con_type

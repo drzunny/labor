@@ -57,7 +57,7 @@ private:
 * ------------------------------------
 */
 
-labor::Response::Response(const string & action, int code ) 
+labor::Response::Response(const string & action, int code )
     : response_(new labor::_response_impl(action, code))
 {
 }
@@ -77,4 +77,4 @@ labor::Response::setHeader(const string & name, const string & val)   {
 void
 labor::Response::send(const labor::Response::ConnectorRef & con) {
     response_->send(con);
-}   
+}

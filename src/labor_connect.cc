@@ -60,7 +60,7 @@ labor::Connector::~Connector()
 
 
 bool
-labor::Connector::send(const string & s) const 
+labor::Connector::send(const string & s) const
 {
     return connector_->send(s);
 }
@@ -72,7 +72,7 @@ labor::Connector::recv() const
 }
 
 void
-labor::Connector::bind(const string & addr) const 
+labor::Connector::bind(const string & addr) const
 {
     connector_->bind(addr);
 }

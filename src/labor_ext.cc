@@ -349,8 +349,8 @@ labor::Extension::pyRegister()  {
     if (s_py_initialize)
         return;
 
-    if (Py_IsInitialized()) 
-    {        
+    if (Py_IsInitialized())
+    {
         Py_InitModule3("LABOR", modules, "Provide internal api for labor");
         s_py_initialize = true;
     }

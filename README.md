@@ -52,15 +52,15 @@ labor --conf='you conf file' <other options>
 
 The services will be loaded after `labor` startup. (some services will be ignored if you use `--disabled`<lang-of-service>)
 
-You can write services yourself by Python/Lua, and put your serivce into $LABOR_SERVICES:
+You can write services yourself by Python/Lua, and put your service into $LABOR_SERVICES:
 
     $LABOR_SERVICE
     |
     +-- your_service_name
         |
-        +------ __init__.py     # Python Service Entrypoint
+        +------ __init__.py     # Python Service Entry point
         |
-        +------ init.lua       -- Lua Serivce Entrypoint
+        +------ init.lua       -- Lua Service Entry point
 
 > ### Client
 
@@ -74,7 +74,7 @@ Here is the Demo:
 
     from labor import Labor
 
-    lb = Labor("127.0.0.1:1808", Labor.TYPE_PUBSUB)
+    lb = Labor("127.0.0.1:1808")
 
     # call service registered in labor
     # these operation is non-blocking.

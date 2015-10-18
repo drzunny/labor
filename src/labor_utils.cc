@@ -37,7 +37,7 @@ static shared_ptr<labor::Conf> s_conf_properties = shared_ptr<labor::Conf>();
 
 
 static void
-_default_conf_assignment()  {    
+_default_conf_assignment()  {
     // labor main section
     s_conf_properties->set("labor.address", "*:1808");
     s_conf_properties->set("labor.publish_addr", "*:5606");
@@ -61,11 +61,11 @@ _read_ini_config(const string & file, bool * ok = NULL)
     if (!__is_init)
     {
         __is_init = true;
-        
+
         s_conf_properties = shared_ptr<labor::Conf>(new labor::Conf);
         _default_conf_assignment();
         if (!labor::path_exists(file))
-        {            
+        {
             _SET_IF_NOT_NULL(ok, false);
             return;
         }
@@ -98,8 +98,8 @@ _lookup_module_dirs(string && modulePath, bool * ok)
         isFound = ::FindNextFileA(hSearcher, &fileData);
     }
     FindClose(hSearcher);
-#else    
-    dirent * ep = NULL; 
+#else
+    dirent * ep = NULL;
     DIR * dp = opendir(searchDir.c_str());
     if (dp == NULL) {
         *ok = false;
@@ -109,7 +109,7 @@ _lookup_module_dirs(string && modulePath, bool * ok)
         if ((ep->d_type & DT_DIR) && ep->d_name[0] != '.')
             modules.push_back(ep->d_name);
     }
-    
+
 #endif
     *ok = true;
     return modules;
@@ -231,8 +231,8 @@ labor::time_sleep(int msecs)    {
 
 // For path
 // ---------------------------------------
-string 
-labor::path_getfull(const string & relpath)    {    
+string
+labor::path_getfull(const string & relpath)    {
     char buff[256];
 #if WIN32
     GetFullPathNameA(relpath.c_str(), 256, buff, NULL);
@@ -417,7 +417,7 @@ bool labor::JsonDoc::toBool() const { return doc_->toBool(); }
 labor::JsonDoc
 labor::JsonDoc::get(const string & name) const    {
     auto r = labor::JsonDoc();
-    rapidjson::Value & v = doc_->get(name);    
+    rapidjson::Value & v = doc_->get(name);
     _get_json_object(r.doc_->raw(), v);
 
     return r;

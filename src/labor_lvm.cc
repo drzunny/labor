@@ -58,7 +58,7 @@ _lvm_json_to_table(lua_State * L, const char * json)    {
             continue;
 
         // Push Key
-        lua_pushstring(L, iter->name.GetString());        
+        lua_pushstring(L, iter->name.GetString());
 
         // Check and Push value
         if (iter->value.IsBool())
@@ -94,7 +94,7 @@ _lvm_build_args(lua_State * L, const char * module, const char * args, const cha
 
     // Push the request field into table
     __LVM_SET_TABLE_S(L, "module", module);
-    __LVM_SET_TABLE_S(L, "version", ver == NULL ? "" : ver); 
+    __LVM_SET_TABLE_S(L, "version", ver == NULL ? "" : ver);
 
     if (header == NULL)
     {
@@ -117,7 +117,7 @@ _lvm_build_args(lua_State * L, const char * module, const char * args, const cha
         _lvm_json_to_table(L, args);
         lua_settable(L, -3);
     }
-    
+
 }
 
 
@@ -179,7 +179,7 @@ _lvm_create_service(const string & key, const string & luafile, string & msg) {
     luaL_openlibs(vm);
 
     // Change the lua vm package search path
-    string working = luafile;    
+    string working = luafile;
     labor::string_replace(working, "init.lua", "");
     _lvm_package_path(vm, std::move(working));
 
@@ -252,11 +252,11 @@ _lvm_service_execute(const string & module, const string & args, labor::LVM::LVM
             msg.append("\nerror while running the error handler function\n"); break;
         default:
             msg.append("\nUnknown\n"); break;
-        }       
+        }
 
         return 500;
     }
-    
+
 
     return 0;
 }

@@ -64,4 +64,3 @@ endif(WIN32)
 # copy the test files
 file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/log)
 file(COPY ${PROJECT_SOURCE_DIR}/test DESTINATION ${PROJECT_BINARY_DIR})
-
