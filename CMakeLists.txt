@@ -12,11 +12,6 @@ if(WIN32)
     link_directories("${PROJECT_SOURCE_DIR}/depends/win32_lib" "$ENV{PYTHON_HOME}/libs")
     add_definitions(-D_CRT_SECURE_NO_WARNINGS -D_SCL_SECURE_NO_WARNINGS)
 
-    # try to link python27_d if Debug. otherwise will link python27
-    # if python27_d does not found in your environment, copy python27.lib to python27_d.lib is OK
-    set(labor_depends_debug )
-    set(labor_depends_release )
-
     # set debug's options
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DLABOR_DEBUG /MTd")
     # set release options
