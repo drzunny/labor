@@ -53,21 +53,23 @@
     <ClCompile>
       <PrecompiledHeader>
       </PrecompiledHeader>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;LABOR_DEBUG;_CRT_SECURE_NO_WARNINGS;_SCL_SECURE_NO_WARNINGS;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;LABOR_DEBUG;Py_REF_DEBUG;_CRT_SECURE_NO_WARNINGS;_SCL_SECURE_NO_WARNINGS;_DEBUG;_CONSOLE;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <DisableSpecificWarnings>4100;4505;4127;4819;4189;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>python27.lib;lua_d.lib;libzmq_d.lib;pthread_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>python27_d.lib;lua_d.lib;libzmq_d.lib;pthread_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>Level4</WarningLevel>
       <PrecompiledHeader>
       </PrecompiledHeader>
       <Optimization>MaxSpeed</Optimization>
@@ -79,6 +81,8 @@
       <StringPooling>true</StringPooling>
       <ExceptionHandling>Sync</ExceptionHandling>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <DisableSpecificWarnings>4100;4505;4127;4819;4189;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -89,8 +93,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="labor_aux.cc" />
     <ClCompile Include="labor_connect.cc" />
     <ClCompile Include="labor_event.cc" />
+    <ClCompile Include="labor_ext.cc" />
     <ClCompile Include="labor_log.cc" />
     <ClCompile Include="labor_lvm.cc" />
     <ClCompile Include="labor_main.cc" />
@@ -103,10 +109,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="labor.h" />
+    <ClInclude Include="labor_aux.h" />
     <ClInclude Include="labor_conf.hpp" />
     <ClInclude Include="labor_connect.h" />
     <ClInclude Include="labor_def.h" />
     <ClInclude Include="labor_event.h" />
+    <ClInclude Include="labor_ext.h" />
     <ClInclude Include="labor_log.h" />
     <ClInclude Include="labor_lvm.h" />
     <ClInclude Include="labor_opt.h" />

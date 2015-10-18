@@ -11,7 +11,6 @@
 #include <queue>
 #include <atomic>
 #include <algorithm>
-#include <boost/algorithm/string.hpp>
 
 
 
@@ -179,7 +178,7 @@ struct _log_body_t {
 static bool _logger_isstartup = false;
 static pthread_t _logger_thread;
 
-// the spin-locks
+// a lock implement by atomic variable
 static atomic<bool> _logger_lock_wait = ATOMIC_VAR_INIT(true);
 
 
@@ -248,23 +247,25 @@ _logger_queue_datefile() {
 static void
 _logger_queue_resume() {
     const bool isLock = false;
-    bool check = std::atomic_exchange(&_logger_lock_wait, isLock);
 
 #ifdef LABOR_DEBUG
+    bool check = std::atomic_exchange(&_logger_lock_wait, isLock);
     if (check && labor::Logger::enableStdout())
         printf("\n[DEBUG]  the queue was been unlocked\n");
+#else
+    std::atomic_exchange(&_logger_lock_wait, isLock);
 #endif
 }
 
 
 /*
-*  a spinlock and timer for waiting the log arrived
+*  use atomic variable and timer for waiting the log arrived
 */
 static void
 _logger_queue_wait(size_t secs)   {
     static uint64_t ts = labor::timestamp_now();
 
-    // To avoid spinlock's idle-loop to waste the CPU. use sleep(1)
+    // To avoid idle-loop to waste the CPU. use sleep(1)
     while (std::atomic_load(&_logger_lock_wait) == true)
     {
         labor::time_sleep(1);
@@ -273,7 +274,7 @@ _logger_queue_wait(size_t secs)   {
         if (now - ts >= secs * 1000)
         {
             ts = now;
-            // this operation will unlock the spinlock, it equal to `break`
+            // this operation will unlock, it equal to `break`
             _logger_queue_resume();
         }
     }

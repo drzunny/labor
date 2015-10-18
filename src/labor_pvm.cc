@@ -2,6 +2,7 @@
 #include "labor_log.h"
 #include "labor_utils.h"
 #include "labor_def.h"
+#include "labor_ext.h"
 
 #include <iostream>
 #include <fstream>
@@ -61,7 +62,7 @@ _pvm_build_args(const char * module, const char * args, const char * header, con
             goto SETUP_LOADER;
         s_pvm_json = PyImport_ImportModule("json");
 
-SETUP_LOADER:
+    SETUP_LOADER:
         s_pvm_jsonload = PyObject_GetAttrString(s_pvm_json, "loads");
     }
 
@@ -126,7 +127,8 @@ _pvm_error_traceback(PyObject * trace, long * limit, string * msg)    {
     PyObject * limitObj = PySys_GetObject("tracebacklimit");
     if (limitObj && PyInt_Check(limitObj))
     {
-        if ((*limit = PyInt_AsLong(limitObj) <= 0))
+        *limit = PyInt_AsLong(limitObj);
+        if (*limit <= 0)
             return -2;
     }
     (*msg).append("\n");
@@ -205,7 +207,7 @@ _pvm_error_string(string & msg) {
 static int
 _pvm_service_exec(const string & module, labor::PVM::PVMType type, const string & args, string & msg)    {
     string moduleKey(module);
-    moduleKey.append(type == labor::PVM::PUBSUB ? "_0" : "_1");
+    moduleKey.append(type == labor::PVM::PUSHPULL ? "_0" : "_1");
     if (s_pvm_module.find(moduleKey) == s_pvm_module.end())
     {
         msg = "not found";
@@ -219,7 +221,7 @@ _pvm_service_exec(const string & module, labor::PVM::PVMType type, const string 
     __XDECRREF(vars);
     if (ret != NULL)
     {
-        if (type != labor::PVM::PUBSUB)
+        if (type != labor::PVM::PUSHPULL)
         {
             // TODO: response
         }
@@ -261,6 +263,7 @@ labor::PVM::init()  {
         // So labor cannot import the services
         PyRun_SimpleString("import sys\nsys.path.append('.')");
 #endif
+        labor::Extension::pyRegister();
     }
     return true;
 }
@@ -280,7 +283,7 @@ labor::PVM::dispose()   {
 void
 labor::PVM::loadModule(const string & module, labor::PVM::PVMType type)  {
     string moduleKey(module);
-    moduleKey.append(type == labor::PVM::PUBSUB ? "_0" : "_1");
+    moduleKey.append(type == labor::PVM::PUSHPULL ? "_0" : "_1");
     if (s_pvm_module.find(moduleKey) != s_pvm_module.end())
     {
         // TODO: Check MD5 for upgrade it
@@ -303,12 +306,9 @@ labor::PVM::loadModule(const string & module, labor::PVM::PVMType type)  {
         LOG_INFO("Load module %s fail", module.c_str());
         return;
     }
-    if (type == labor::PVM::PVMType::PUBSUB)
+    if (type == labor::PVM::PVMType::PUSHPULL)
     {
         method = PyObject_GetAttrString(pymodule, "subscript");
-    }
-    else
-    {
     }
     if (!method)    {
         LOG_INFO("handler not found");

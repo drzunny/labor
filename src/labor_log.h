@@ -67,7 +67,7 @@ namespace labor
         const char * source_;
         int line_;
         LoggerLevel level_;
-        
+
     };
 }
 

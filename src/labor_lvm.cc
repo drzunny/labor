@@ -2,8 +2,8 @@
 #include "labor_log.h"
 #include "labor_def.h"
 #include "labor_utils.h"
+#include "labor_ext.h"
 
-#include <fstream>
 #include <unordered_map>
 #include <assert.h>
 
@@ -58,7 +58,7 @@ _lvm_json_to_table(lua_State * L, const char * json)    {
             continue;
 
         // Push Key
-        lua_pushstring(L, iter->name.GetString());        
+        lua_pushstring(L, iter->name.GetString());
 
         // Check and Push value
         if (iter->value.IsBool())
@@ -94,7 +94,7 @@ _lvm_build_args(lua_State * L, const char * module, const char * args, const cha
 
     // Push the request field into table
     __LVM_SET_TABLE_S(L, "module", module);
-    __LVM_SET_TABLE_S(L, "version", ver == NULL ? "" : ver); 
+    __LVM_SET_TABLE_S(L, "version", ver == NULL ? "" : ver);
 
     if (header == NULL)
     {
@@ -117,7 +117,7 @@ _lvm_build_args(lua_State * L, const char * module, const char * args, const cha
         _lvm_json_to_table(L, args);
         lua_settable(L, -3);
     }
-    
+
 }
 
 
@@ -180,9 +180,11 @@ _lvm_create_service(const string & key, const string & luafile, string & msg) {
 
     // Change the lua vm package search path
     string working = luafile;
-    // luafile = '$working/init.lua'
     labor::string_replace(working, "init.lua", "");
     _lvm_package_path(vm, std::move(working));
+
+    // setup the extension function per vm
+    labor::Extension::luaRegister(vm);
 
     // add `traceback` function in vm stack as the first element
     // to get all stack traceback, you must put traceback into stack,
@@ -209,13 +211,13 @@ _lvm_create_service(const string & key, const string & luafile, string & msg) {
 static int
 _lvm_service_execute(const string & module, const string & args, labor::LVM::LVMType type, string & msg)    {
     string key(module);
-    key.append(type == labor::LVM::PUBSUB ? "_0" : "_1");
+    key.append(type == labor::LVM::PUSHPULL ? "_0" : "_1");
 
     if (s_lua_vm.find(key) == s_lua_vm.end())
     {
         msg = "module `$name` with `$mode` is not found";
         labor::string_replace(msg, "$name", module);
-        labor::string_replace(msg, "$mode", type == labor::LVM::PUBSUB ? "PUBSUB" : "REQREP");
+        labor::string_replace(msg, "$mode", type == labor::LVM::PUSHPULL ? "PUSHPULL" : "REQREP");
         return 404;
     }
 
@@ -250,11 +252,11 @@ _lvm_service_execute(const string & module, const string & args, labor::LVM::LVM
             msg.append("\nerror while running the error handler function\n"); break;
         default:
             msg.append("\nUnknown\n"); break;
-        }       
+        }
 
         return 500;
     }
-    
+
 
     return 0;
 }
@@ -294,7 +296,7 @@ labor::LVM::dispose()   {
 void
 labor::LVM::loadModule(const string & module, labor::LVM::LVMType type)    {
     string moduleKey(module);
-    moduleKey.append(type == labor::LVM::PUBSUB ? "_0" : "_1");
+    moduleKey.append(type == labor::LVM::PUSHPULL ? "_0" : "_1");
     if (s_lua_vm.find(moduleKey) != s_lua_vm.end())
     {
         // TODO: Check MD5 for upgrade it

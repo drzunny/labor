@@ -36,7 +36,7 @@ namespace labor
     void time_sleep(int msecs);
 
 
-    
+
     // for path
     // --------------------------------------------
     bool path_exists(const std::string & file);
@@ -58,7 +58,7 @@ namespace labor
 
         static std::string encode(const JsonDoc & doc);
         static JsonDoc decode(const std::string & json);
-        
+
         bool has(const std::string & name) const;
         bool isNull() const;
 

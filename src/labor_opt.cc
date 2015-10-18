@@ -71,7 +71,7 @@ labor::Options::parse(int argc, char * argv[])  {
 
     if (argc == 1)
         return true;
-    
+
     // if i is a odd-number, it means it's a option name
     // else, position i of the argv is the value of position i-1
     // but when you meet -h or -v..... just return.
@@ -87,12 +87,12 @@ labor::Options::parse(int argc, char * argv[])  {
             }
             return true;
         }
-        if (i % 2 != 0) 
+        if (i % 2 != 0)
         {
             // if odd-number is not a option
             if (!_options_in(argv[i], 3, "--conf", "--mode", "--disabled"))
                 return false;
-            lastOpt = argv[i];            
+            lastOpt = argv[i];
         }
         else
         {
@@ -134,17 +134,17 @@ labor::Options::parse(int argc, char * argv[])  {
 const string &
 labor::Options::configFile()    { return s_option_conf; }
 
-bool 
+bool
 labor::Options::enablePython()  { return s_option_enablepy; }
 
-bool 
+bool
 labor::Options::enableLua() { return s_option_enablelua; }
 
 labor::Options::RunningMode
 labor::Options::runningMode()   { return s_option_mode; }
 
 
-bool 
+bool
 labor::Options::checkAndShowHelp()  {
     if (s_option_has_help)  {
         fprintf(stdout, "%s\n\n", s_labor_help);
@@ -153,7 +153,7 @@ labor::Options::checkAndShowHelp()  {
 }
 
 
-bool 
+bool
 labor::Options::checkAndShowVersion()   {
     if (s_option_has_version)
     {

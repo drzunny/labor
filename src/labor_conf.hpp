@@ -8,7 +8,8 @@
 #include <fstream>
 #include <iostream>
 #include <unordered_map>
-#include <boost/algorithm/string.hpp>
+
+#include "labor_utils.h"
 
 namespace labor
 {
@@ -57,7 +58,7 @@ namespace labor
         }
 
         inline void _replace_macro(Str & ln)    {
-            boost::replace_all(ln, "@LABOR_ROOT", labor::Options::laborRoot());
+            labor::string_replace(ln, "@LABOR_ROOT", labor::Options::laborRoot());
         }
 
         bool _line_parse(Str && ln, SHashtable & conf, Str & section)   {

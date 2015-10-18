@@ -13,8 +13,7 @@ namespace labor
     public:
         enum ConnectorTypes
         {
-            PUBSUB = 0,
-            REQREP = 1
+            PUSHPULL = 0,
         };
     public:
         Connector(ConnectorTypes type);
@@ -23,7 +22,6 @@ namespace labor
         bool send(const std::string & s) const;
         std::string recv() const;
         void bind(const std::string & addr) const;
-        void setFilter(const std::string & name);
 
     private:
         std::shared_ptr<_connector_impl> connector_;

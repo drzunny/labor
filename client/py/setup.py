@@ -8,4 +8,3 @@ setup(
     requires=["pyzmq"],
     license="Apache",
 )
-
